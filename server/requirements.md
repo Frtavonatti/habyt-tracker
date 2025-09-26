@@ -2,9 +2,9 @@
 
 ## 1. Project Setup
 - [x] Initialize a Node.js project with TypeScript.
-- [ ] Install and configure Express, Sequelize, and PostgreSQL.
-- [ ] Set up environment variables for dev, prod, and test environments.
-- [ ] Configure Sequelize to connect to PostgreSQL using environment variables.
+- [x] Install and configure Express, Sequelize, and PostgreSQL.
+- [x] Set up environment variables for dev, prod, and test environments.
+- [x] Configure Sequelize to connect to PostgreSQL using environment variables.
 
 ## 2. Database Models
 - [ ] **User Model**
@@ -24,6 +24,9 @@
 - [ ] User can create, read, update, and delete Habyts.
 - [ ] Only allow users to manage their own Habyts.
 - [ ] Basic authentication (JWT or session-based) for user actions.
+- [ ] Implement tests for authentication logic to ensure security and correctness.
+- [ ] Write tests for CRUD operations on Habyts to verify user access control.
+- [ ] Add tests for model relationships and referential integrity.
 
 ## 5. Future Scalability
 - [ ] Add Completion model to track daily habit completion and time spent.
