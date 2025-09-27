@@ -1,0 +1,36 @@
+{
+  "name": "habyt-tracker-monorepo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "workspaces": [
+    "server"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w server",
+    "build": "npm run build -w server",
+    "start": "npm run start -w server",
+    "typecheck": "tsc -b --pretty",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "db:init": "docker exec -i habyt-postgres psql -U app -d appdb < init.sql",
+    "db:list": "docker exec -it habyt-postgres psql -U app -l",
+    "db:connect": "docker exec -it habyt-postgres psql -U app -d devdatabase",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose stop postgres",
+    "db:destroy": "docker compose down -v postgres"
+  },
+  "author": "frtavonatti",
+  "license": "MIT",
+  "description": "This project was built to showcase a full stack habit tracking application using TypeScript, React Native, React, Express, Sequelize, PostgreSQL and Docker.",
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.5.2",
+    "@types/pg": "^8.15.5",
+    "@types/sequelize": "^4.28.20",
+    "eslint": "^9.36.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.44.1"
+  }
+}

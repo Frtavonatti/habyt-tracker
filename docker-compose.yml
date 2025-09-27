@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: habyt-postgres
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: appdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d appdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 8
+
+  # server:
+  #   build:
+  #     context: ./server
+  #     dockerfile: Dockerfile
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   env_file:
+  #     - ./.env.development
+  #   command: ["node", "dist/index.js"]
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./server/src:/app/server/src:ro
+
+volumes:
+  pgdata:

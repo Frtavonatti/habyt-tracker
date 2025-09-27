@@ -1,6 +1,6 @@
 import { Sequelize } from "sequelize"
 
-import { DATABASE_URL, TEST_DATABASE_URL, DEV_DATABASE_URL } from "./config"
+import { DATABASE_URL, TEST_DATABASE_URL, DEV_DATABASE_URL } from "./config.js"
 
 function getDbUrl(): string {
   switch (process.env.NODE_ENV) {

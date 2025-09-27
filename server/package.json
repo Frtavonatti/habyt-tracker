@@ -4,12 +4,11 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "start": "NODE_ENV=production tsx --env-file=.env --watch  src/index.ts",
+    "start": "NODE_ENV=production node dist/index.js",
     "dev": "NODE_ENV=development tsx --env-file=.env --watch src/index.ts",
-    "pg": "docker exec -it postgres psql -U postgres -d mydatabase",
-    "pg:test": "docker exec -it postgres-test psql -U postgres -d testdatabase",
-    "pg:dev": "docker exec -it postgres-dev psql -U postgres -d devdatabase",
-    "lint": "eslint . --ext .ts,.tsx"
+    "build": "rm -rf dist && tsc",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix"
   },
   "author": "frtavonatti",
   "license": "MIT",
@@ -20,16 +19,5 @@
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.3",
     "sequelize": "^6.37.7"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.36.0",
-    "@types/express": "^5.0.3",
-    "@types/node": "^24.5.2",
-    "@types/pg": "^8.15.5",
-    "@types/sequelize": "^4.28.20",
-    "eslint": "^9.36.0",
-    "tsx": "^4.20.6",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.44.1"
   }
 }
