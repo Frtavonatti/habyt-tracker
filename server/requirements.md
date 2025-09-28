@@ -7,9 +7,9 @@
 - [x] Configure Sequelize to connect to PostgreSQL using environment variables.
 
 ## 2. Database Models
-- [ ] **User Model**
+- [x] **User Model**
   - Fields: id, name, email, password, etc.
-- [ ] **Habyt Model**
+- [x] **Habyt Model**
   - Fields: id, title, description, userId (foreign key).
   - Relationship: One-to-many (User has many Habyts).
 - [ ] **Completion Model** (for future development)
@@ -17,8 +17,8 @@
   - Relationship: One-to-many (Habyt has many Completions).
 
 ## 3. Fundamental Relationships
-- [ ] Implement User and Habyt models with one-to-many relationship.
-- [ ] Ensure referential integrity between User and Habyt.
+- [x] Implement User and Habyt models with one-to-many relationship.
+- [x] Ensure referential integrity between User and Habyt.
 
 ## 4. Controllers & Routes
 - [ ] User can create, read, update, and delete Habyts.

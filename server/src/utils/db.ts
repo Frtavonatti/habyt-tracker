@@ -1,4 +1,5 @@
 import { Sequelize } from "sequelize"
+import { Umzug, SequelizeStorage } from "umzug"
 
 import { DATABASE_URL, TEST_DATABASE_URL, DEV_DATABASE_URL } from "./config.js"
 
@@ -22,6 +23,23 @@ const dbUrl = getDbUrl()
 export const sequelize = new Sequelize(dbUrl, {
   dialect: "postgres",
 })
+
+const migrationConf = {
+  migrations: {
+    glob: "migrations/*.ts",
+  },
+  storage: new SequelizeStorage({ sequelize }),
+  context: sequelize.getQueryInterface(),
+  logger: console,
+}
+
+export const runMigrations = async () => {
+  const migrator = new Umzug(migrationConf)
+  const migrations = await migrator.up()
+  console.log("Migrations up to date", {
+    files: migrations.map((mig) => mig.name)
+  })
+}
 
 export const connectToDatabase = async () => {
   try {

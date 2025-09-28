@@ -9,7 +9,12 @@ app.get('/', (_req, res) => {
   res.send('Hello, World!')
 })
 
-app.listen(PORT, async () => {
-  await connectToDatabase()
-  console.log(`Server is running at http://localhost:${PORT}`)
-})
+connectToDatabase()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server is running at http://localhost:${PORT}`)
+    })
+  })
+  .catch((error) => {
+    console.error("Error starting server:", error)
+  })
