@@ -1,13 +1,14 @@
 import express from 'express'
 
+import userRouter from './controllers/users.js'
+import habytRouter from './controllers/habyts.js'
 import { connectToDatabase } from './utils/db.js'
 import { PORT } from './utils/config.js'
 
 const app = express()
 
-app.get('/', (_req, res) => {
-  res.send('Hello, World!')
-})
+app.use('/api/users', userRouter)
+app.use('/api/habyts', habytRouter)
 
 connectToDatabase()
   .then(() => {

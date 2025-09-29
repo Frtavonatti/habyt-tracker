@@ -13,7 +13,7 @@ export default [
   ...tseslint.configs.recommendedTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
   {
-    files: ['server/src/**/*.ts'],
+    files: ['server/src/**/*.ts'], // add 'shared/src/**/*.ts' and 'client/src/**/*.ts'
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {

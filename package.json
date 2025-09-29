@@ -13,6 +13,8 @@
     "typecheck": "tsc -b --pretty",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "lint:server": "eslint server/src --ext .ts",
+    "lint:server:fix": "eslint server/src --ext .ts --fix",
     "db:init": "docker exec -i habyt-postgres psql -U app -d appdb < init.sql",
     "db:list": "docker exec -it habyt-postgres psql -U app -l",
     "db:connect": "docker exec -it habyt-postgres psql -U app -d devdatabase",

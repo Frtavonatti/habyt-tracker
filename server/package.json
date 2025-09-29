@@ -7,8 +7,6 @@
     "start": "NODE_ENV=production node dist/index.js",
     "dev": "NODE_ENV=development tsx --env-file=.env --watch src/index.ts",
     "build": "rm -rf dist && tsc",
-    "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "drop": "tsx ./src/utils/dropTables.ts",
     "migrate": "tsx ./src/utils/migrate.ts",
     "seed": "tsx ./src/utils/seed.ts",
