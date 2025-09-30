@@ -1,3 +1,5 @@
+import path from "path"
+import { fileURLToPath } from "url"
 import { Sequelize } from "sequelize"
 import { Umzug, SequelizeStorage } from "umzug"
 
@@ -24,11 +26,15 @@ export const sequelize = new Sequelize(dbUrl, {
   dialect: "postgres",
 })
 
+// ES module __dirname workaround
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 const migrationConf = {
   migrations: {
-    glob: "migrations/*.ts",
+    glob: path.join(__dirname, "../migrations/*.ts"),
   },
-  storage: new SequelizeStorage({ sequelize }),
+  storage: new SequelizeStorage({ sequelize, tableName: "migrations" }),
   context: sequelize.getQueryInterface(),
   logger: console,
 }

@@ -23,6 +23,7 @@
     "sequelize": "^6.37.7"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
     "supertest": "^7.1.4",
     "umzug": "^3.8.2"
   }
