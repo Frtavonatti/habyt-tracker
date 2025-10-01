@@ -1,16 +1,21 @@
 import Router from 'express'
+import type { Request, Response } from 'express'
 
-import { Habyt} from '../models/index.js'
+import { Habyt } from '../models/index.js'
 
 const habytRouter = Router()
+
+interface CreateHabytBody {
+  title: string
+  description?: string | null
+}
 
 habytRouter.get('/', async (req, res) => {
   const habyts = await Habyt.findAll()
   return res.json(habyts)
 })
 
-habytRouter.post('/', async (req, res) => { // Add authentication middleware to get userId from token
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+habytRouter.post('/', async (req: Request<unknown, unknown, CreateHabytBody>, res: Response) => { // Add authentication middleware to get userId from token
   const { title, description }: {
     title: string,
     description?: string | null

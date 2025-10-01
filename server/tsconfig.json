@@ -3,9 +3,10 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
-    "sourceMap": true,
+    "composite": true,
     "declaration": true,
     "declarationMap": true,
+    "sourceMap": true,
     "incremental": true,
     "tsBuildInfoFile": "dist/.tsbuildinfo",
     "isolatedModules": true
