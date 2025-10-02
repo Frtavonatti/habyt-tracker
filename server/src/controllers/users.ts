@@ -1,4 +1,4 @@
-import Router from 'express'
+import { Router } from 'express'
 import type { Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 
@@ -48,7 +48,7 @@ userRouter.post('/', async (req: Request<unknown, unknown, CreateUserBody>, res:
     return res.status(400).json({ error: 'Email must be unique' })
   }
 
-  const passwordHash: string = await bcrypt.hash(password, 10)
+  const passwordHash = await bcrypt.hash(password, 10)
 
   const newUser = await User.create({
     username: username.trim(),

@@ -1,6 +1,7 @@
-import Router from 'express'
+import { Router } from 'express'
 import type { Request, Response } from 'express'
-import * as jwt from 'jsonwebtoken'
+import jwt from 'jsonwebtoken'
+import bcrypt from 'bcrypt'
 
 import { User } from '../models/index.js'
 import { JWT_SECRET } from '../utils/config.js'
@@ -26,9 +27,11 @@ loginRouter.post('/', async (req: Request<unknown, unknown, LoginBody>, res: Res
     return res.status(400).json({ error: 'Password is required' })
 
   const user = await User.findOne({ where: { username } })
-  const passwordCorrect = password === 'secret' // for demonstrations only
+  if (!user)
+    return res.status(401).json({ error: 'Invalid username or password' })
 
-  if (!user || !passwordCorrect)
+  const passwordCorrect = await bcrypt.compare(password, user.passwordHash)
+  if (!passwordCorrect)
     return res.status(401).json({ error: 'Invalid username or password' })
 
   if (typeof JWT_SECRET !== 'string' || JWT_SECRET.length === 0)
