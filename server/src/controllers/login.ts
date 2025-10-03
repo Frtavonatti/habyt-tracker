@@ -27,11 +27,12 @@ loginRouter.post('/', async (req: Request<unknown, unknown, LoginBody>, res: Res
     return res.status(400).json({ error: 'Password is required' })
 
   const user = await User.findOne({ where: { username } })
-  if (!user)
-    return res.status(401).json({ error: 'Invalid username or password' })
 
-  const passwordCorrect = await bcrypt.compare(password, user.passwordHash)
-  if (!passwordCorrect)
+  const passwordCorrect = user
+    ? await bcrypt.compare(password, user.passwordHash)
+    : false
+
+  if (!passwordCorrect || !user)
     return res.status(401).json({ error: 'Invalid username or password' })
 
   if (typeof JWT_SECRET !== 'string' || JWT_SECRET.length === 0)
