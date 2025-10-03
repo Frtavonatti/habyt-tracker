@@ -18,6 +18,12 @@ class User extends Model<
   declare passwordHash: string
   // declare createdAt: CreationOptional<Date>
   // declare updatedAt: CreationOptional<Date>
+
+  // toJSON() {
+  //   const values = { ...this.get() }
+  //   delete (values as any).passwordHash
+  //   return values
+  // }
 }
 
 User.init(
@@ -55,6 +61,14 @@ User.init(
     modelName: "User",
     tableName: "users",
     timestamps: true,
+    defaultScope: {
+      attributes: { exclude: ["passwordHash"] },
+    },
+    scopes: {
+      withPassword: {
+        attributes: { include: ["passwordHash"] },
+      },
+    },
   }
 )
 

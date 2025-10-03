@@ -58,7 +58,7 @@
 - [ ] ESLint configured with `parserOptions.project` (type-aware enabled)
 
 ### Authentication & Security
-- [ ] JWT middleware (`authRequired`) implemented
+- [x] JWT middleware (`authRequired`) implemented
 - [ ] `Request` augmented with `authUser`
 - [ ] Protected routes (create Habyt, delete Habyt, delete User)
 - [ ] Ownership verification on DELETE Habyt/User

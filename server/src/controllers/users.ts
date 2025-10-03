@@ -3,6 +3,7 @@ import type { Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 
 import { User } from '../models/index.js'
+import { tokenExtractor, userFinder } from '../utils/middleware.js'
 
 const userRouter = Router()
 
@@ -11,6 +12,10 @@ interface CreateUserBody {
   name: string
   email: string
   password: string
+}
+
+interface UpdateUsernameBody {
+  newUsername: string
 }
 
 userRouter.get('/', async (req, res) => {
@@ -26,7 +31,10 @@ userRouter.get('/:id', async (req, res) => {
   return res.json(user)
 })
 
-userRouter.post('/', async (req: Request<unknown, unknown, CreateUserBody>, res: Response) => {
+userRouter.post('/', async (
+  req: Request<unknown, unknown, CreateUserBody>, 
+  res: Response
+) => {
   const { username, name, email, password } = req.body
 
   if (!username || typeof username !== 'string' || username.trim() === '')
@@ -65,12 +73,30 @@ userRouter.post('/', async (req: Request<unknown, unknown, CreateUserBody>, res:
   })
 })
 
-userRouter.delete('/:id', async (req, res) => { // TODO: add auth middleware (only admin and the user itself can delete the user)
-  const user = await User.findByPk(req.params.id)
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' })
+userRouter.put('/:username', tokenExtractor, userFinder, async (
+    req: Request<unknown, unknown, UpdateUsernameBody>,
+    res: Response
+  ) => {
+    if (req.decodedToken?.id !== req.user?.id) {
+      return res.status(403).json({ error: 'forbidden' })
+    }
+
+    const { newUsername } = req.body
+    if (!newUsername || typeof newUsername !== 'string' || newUsername.trim() === '') {
+      return res.status(400).json({ error: 'New username is required' })
+    }
+
+    req.user!.username = newUsername.trim()
+    const updatedUser = await req.user!.save()
+    return res.status(200).json(updatedUser)
   }
-  await user.destroy()
+)
+
+userRouter.delete('/:id', tokenExtractor, userFinder, async (req, res) => {
+  if (req.decodedToken?.id !== req.user?.id) {
+    return res.status(403).json({ error: 'forbidden' })
+  }
+  await req.user!.destroy()
   return res.status(204).end()
 })
 

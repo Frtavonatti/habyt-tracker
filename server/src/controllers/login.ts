@@ -20,7 +20,7 @@ interface AuthTokenPayload {
 
 loginRouter.post('/', async (req: Request<unknown, unknown, LoginBody>, res: Response) => {
   const { username, password } = req.body
-
+  
   if (!username || typeof username != 'string' || username.trim() === '')
     return res.status(400).json({ error: 'Username is required' })
   if (!password || typeof password != 'string' || password.trim() === '')
@@ -34,9 +34,6 @@ loginRouter.post('/', async (req: Request<unknown, unknown, LoginBody>, res: Res
 
   if (!passwordCorrect || !user)
     return res.status(401).json({ error: 'Invalid username or password' })
-
-  if (typeof JWT_SECRET !== 'string' || JWT_SECRET.length === 0)
-    return res.status(500).json({ error: 'JWT secret not configured' })
 
   const payload: AuthTokenPayload = {
     id: String(user.id),
