@@ -1,5 +1,4 @@
 import type { Request, Response, NextFunction, RequestHandler } from 'express'
-import 'express-serve-static-core'
 import jwt from 'jsonwebtoken'
 
 import { User } from '../models/index.js'
@@ -13,27 +12,26 @@ declare module 'express-serve-static-core' {
   }
 }
 
-export const tokenExtractor = (req: Request, res: Response, next: NextFunction) => {
+export const tokenExtractor = (
+  req: Request, 
+  res: Response, 
+  next: NextFunction
+) => {
   const authorization = req.get('authorization')
   if (!authorization || authorization.toLowerCase().startsWith('bearer ')) {
     req.token = null
     req.decodedToken = null
-    return next()
+    return res.status(401).json({ error: 'token missing' })
   }
 
   const token = authorization.substring(7)
   req.token = token
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET)
-    if (typeof decoded === 'object' && decoded && 'id' in decoded) {
+  const decoded = jwt.verify(token, JWT_SECRET)
+  if (typeof decoded === 'object' && decoded && 'id' in decoded) {
     req.decodedToken = decoded
     return next()
-    } else {
-      req.decodedToken = null
-      return res.status(401).json({ error: 'invalid token' })
-    }
-  } catch {
+  } else {
     req.decodedToken = null
     return res.status(401).json({ error: 'invalid token' })
   }

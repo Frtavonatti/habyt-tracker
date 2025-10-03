@@ -24,10 +24,10 @@ userRouter.get('/', async (req, res) => {
 })
 
 userRouter.get('/:id', async (req, res) => {
-  const user = await User.findByPk(req.params.id)
-  if (!user) {
+  const user = await User.findByPk(req.params.id,  { rejectOnEmpty: false })
+  if (!user)
     return res.status(404).json({ error: 'User not found' })
-  }
+  
   return res.json(user)
 })
 
@@ -74,23 +74,22 @@ userRouter.post('/', async (
 })
 
 userRouter.put('/:username', tokenExtractor, userFinder, async (
-    req: Request<unknown, unknown, UpdateUsernameBody>,
-    res: Response
-  ) => {
-    if (req.decodedToken?.id !== req.user?.id) {
-      return res.status(403).json({ error: 'forbidden' })
-    }
-
-    const { newUsername } = req.body
-    if (!newUsername || typeof newUsername !== 'string' || newUsername.trim() === '') {
-      return res.status(400).json({ error: 'New username is required' })
-    }
-
-    req.user!.username = newUsername.trim()
-    const updatedUser = await req.user!.save()
-    return res.status(200).json(updatedUser)
+  req: Request<unknown, unknown, UpdateUsernameBody>,
+  res: Response
+) => {
+  if (req.decodedToken?.id !== req.user?.id) {
+    return res.status(403).json({ error: 'forbidden' })
   }
-)
+
+  const { newUsername } = req.body
+  if (!newUsername || typeof newUsername !== 'string' || newUsername.trim() === '') {
+    return res.status(400).json({ error: 'New username is required' })
+  }
+
+  req.user!.username = newUsername.trim()
+  const updatedUser = await req.user!.save()
+  return res.status(200).json(updatedUser)
+})
 
 userRouter.delete('/:id', tokenExtractor, userFinder, async (req, res) => {
   if (req.decodedToken?.id !== req.user?.id) {

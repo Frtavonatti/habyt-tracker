@@ -22,3 +22,5 @@ connectToDatabase()
   .catch((error) => {
     console.error("Error starting server:", error)
   })
+
+export default app

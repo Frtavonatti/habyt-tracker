@@ -74,7 +74,7 @@
 - [ ] Test runner (Vitest or Jest) + Supertest configured
 - [ ] Minimum user fixture/seed
 - [ ] Test login (200 and 401)
-- [ ] Test user creation (201 and duplicate 400)
+- [x] Test user creation (201 and duplicate 400)
 - [ ] Test create Habyt authenticated (201)
 - [ ] Test create Habyt without token (401)
 - [ ] Test delete own Habyt (204)
