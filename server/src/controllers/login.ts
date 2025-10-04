@@ -26,7 +26,7 @@ loginRouter.post('/', async (req: Request<unknown, unknown, LoginBody>, res: Res
   if (!password || typeof password != 'string' || password.trim() === '')
     return res.status(400).json({ error: 'Password is required' })
 
-  const user = await User.findOne({ where: { username } })
+  const user = await User.scope('withPassword').findOne({ where: { username } })
 
   const passwordCorrect = user
     ? await bcrypt.compare(password, user.passwordHash)

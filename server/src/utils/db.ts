@@ -24,6 +24,7 @@ const dbUrl = getDbUrl()
 
 export const sequelize = new Sequelize(dbUrl, {
   dialect: "postgres",
+  logging: process.env.NODE_ENV === "development" ? console.log : false,
 })
 
 // ES module __dirname workaround

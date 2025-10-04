@@ -4,19 +4,9 @@ import bcrypt from 'bcrypt'
 
 import { User } from '../models/index.js'
 import { tokenExtractor, userFinder } from '../utils/middleware.js'
+import type { CreateUserBody, UpdateUsernameBody } from '../types/user.types.js'
 
 const userRouter = Router()
-
-interface CreateUserBody {
-  username: string
-  name: string
-  email: string
-  password: string
-}
-
-interface UpdateUsernameBody {
-  newUsername: string
-}
 
 userRouter.get('/', async (req, res) => {
   const users = await User.findAll()

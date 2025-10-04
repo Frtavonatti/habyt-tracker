@@ -1,18 +1,11 @@
 import supertest from 'supertest'
-import { describe, it, before, beforeEach, after } from 'node:test'
-import assert from 'node:assert'
 import bcrypt from 'bcrypt'
+import { test, describe, beforeEach } from 'node:test'
+import assert from 'node:assert'
 
 import app from '../index.js'
-import { sequelize } from '../utils/db.js'
 import { User } from '../models/index.js'
-
-interface PublicUser {
-  id: number
-  username: string
-  name: string
-  email: string
-}
+import type { UserResponse } from '../types/user.types.js'
 
 interface ErrorBody {
   error: string
@@ -27,10 +20,6 @@ const initialUser = {
   password: 'password123'
 }
 
-before(async () => {
-  await sequelize.sync({ force: true })
-})
-
 beforeEach(async () => {
   await User.destroy({ where: {} })
   const passwordHash = await bcrypt.hash(initialUser.password, 10)
@@ -42,28 +31,32 @@ beforeEach(async () => {
   })
 })
 
-after(async () => {
-  await sequelize.close()
-  process.exit(0)
-})
-
-describe('User Endpoints', () => {
-  it('GET /api/users returns all users', async () => {
+describe('GET /api/users', () => {
+  test('returns all users', async () => {
     const response = await api.get('/api/users').expect(200)
-    const users = response.body as PublicUser[]
+    const users = response.body as UserResponse[]
     assert.strictEqual(Array.isArray(users), true)
     assert.strictEqual(users.length, 1)
     assert.strictEqual(users[0].username, initialUser.username)
   })
 
-  it('GET /api/users/:id returns a user by id', async () => {
+  test('GET /api/users/:id returns a user by id', async () => {
     const user = await User.findOne({ where: { username: initialUser.username } })
     const response = await api.get(`/api/users/${user!.id}`).expect(200)
-    const body = response.body as PublicUser
+    const body = response.body as UserResponse
     assert.strictEqual(body.username, initialUser.username)
   })
 
-  it('POST /api/users creates a new user', async () => {
+  test('GET /api/users/:id (UUID inexistente) retorna 404', async () => {
+    const nonexistent = 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa'
+    const response = await api.get(`/api/users/${nonexistent}`).expect(404)
+    const body = response.body as ErrorBody
+    assert.strictEqual(body.error, 'User not found')
+  })
+})
+
+describe('POST /api/users', () => {
+  test('creates a new user', async () => {
     const newUser = {
       username: 'anotheruser',
       name: 'Another User',
@@ -71,14 +64,14 @@ describe('User Endpoints', () => {
       password: 'password456'
     }
     const response = await api.post('/api/users').send(newUser).expect(201)
-    const created = response.body as PublicUser
+    const created = response.body as UserResponse
     assert.strictEqual(created.username, newUser.username)
     assert.strictEqual(created.email, newUser.email)
     const users = await User.findAll()
     assert.strictEqual(users.length, 2)
   })
 
-  it('POST /api/users fails with duplicate username', async () => {
+  test('fails with duplicate username', async () => {
     const response = await api.post('/api/users').send({
       ...initialUser,
       email: 'unique@example.com'
@@ -87,7 +80,7 @@ describe('User Endpoints', () => {
     assert.strictEqual(body.error, 'Username must be unique')
   })
 
-  it('POST /api/users fails with duplicate email', async () => {
+  test('fails with duplicate email', async () => {
     const response = await api.post('/api/users').send({
       username: 'uniqueuser',
       name: 'Unique User',
@@ -96,12 +89,5 @@ describe('User Endpoints', () => {
     }).expect(400)
     const body = response.body as ErrorBody
     assert.strictEqual(body.error, 'Email must be unique')
-  })
-
-  it('GET /api/users/:id (UUID inexistente) retorna 404', async () => {
-    const nonexistent = 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa'
-    const response = await api.get(`/api/users/${nonexistent}`).expect(404)
-    const body = response.body as ErrorBody
-    assert.strictEqual(body.error, 'User not found')
   })
 })
