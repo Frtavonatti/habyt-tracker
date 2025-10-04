@@ -1,13 +1,17 @@
 import express from 'express'
 
+import userRouter from './controllers/users.js'
+import loginRouter from './controllers/login.js'
+import habytRouter from './controllers/habyts.js'
 import { connectToDatabase } from './utils/db.js'
 import { PORT } from './utils/config.js'
 
 const app = express()
+app.use(express.json())
 
-app.get('/', (_req, res) => {
-  res.send('Hello, World!')
-})
+app.use('/api/users', userRouter)
+app.use('/api/habyts', habytRouter)
+app.use('/api/login', loginRouter)
 
 connectToDatabase()
   .then(() => {
@@ -18,3 +22,5 @@ connectToDatabase()
   .catch((error) => {
     console.error("Error starting server:", error)
   })
+
+export default app

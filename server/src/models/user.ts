@@ -1,22 +1,37 @@
-import { DataTypes, Model } from "sequelize"
+import { DataTypes, Model, literal } from "sequelize"
+import type {
+  InferAttributes,
+  InferCreationAttributes,
+  CreationOptional,
+} from "sequelize"
 
 import { sequelize } from "../utils/db.js"
 
-interface UserAttributes {
-  id: number
-  name: string
-  username: string
-  email: string
-  passwordHash: string
-}
+class User extends Model<
+  InferAttributes<User>,
+  InferCreationAttributes<User>
+> {
+  declare id: CreationOptional<string>
+  declare name: string
+  declare username: string
+  declare email: string
+  declare passwordHash: string
+  // declare createdAt: CreationOptional<Date>
+  // declare updatedAt: CreationOptional<Date>
 
-class User extends Model<UserAttributes> {}
+  // toJSON() {
+  //   const values = { ...this.get() }
+  //   delete (values as any).passwordHash
+  //   return values
+  // }
+}
 
 User.init(
   {
     id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.UUID,
+      defaultValue: literal('gen_random_uuid()'),
+      unique: true,
       primaryKey: true,
     },
     name: {
@@ -46,6 +61,14 @@ User.init(
     modelName: "User",
     tableName: "users",
     timestamps: true,
+    defaultScope: {
+      attributes: { exclude: ["passwordHash"] },
+    },
+    scopes: {
+      withPassword: {
+        attributes: { include: ["passwordHash"] },
+      },
+    },
   }
 )
 

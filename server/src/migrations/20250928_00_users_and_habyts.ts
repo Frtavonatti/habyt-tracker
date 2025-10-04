@@ -1,11 +1,12 @@
-import { DataTypes } from "sequelize"
+import { DataTypes, literal } from "sequelize"
 import type { QueryInterface } from "sequelize"
 
 export async function up({ context: queryInterface }: { context: QueryInterface }) {
   await queryInterface.createTable("users", {
     id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.UUID,
+      defaultValue: literal('gen_random_uuid()'),
+      unique: true,
       primaryKey: true,
     },
     name: {
@@ -41,8 +42,9 @@ export async function up({ context: queryInterface }: { context: QueryInterface 
 
   await queryInterface.createTable("habyts", {
     id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.UUID,
+      defaultValue: literal('gen_random_uuid()'),
+      unique: true,
       primaryKey: true,
     },
     title: {
@@ -54,7 +56,7 @@ export async function up({ context: queryInterface }: { context: QueryInterface 
       allowNull: true,
     },
     userId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: "users",

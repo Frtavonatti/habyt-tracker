@@ -12,12 +12,15 @@ export default [
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
+
   {
-    files: ['server/src/**/*.ts'],
+    files: ['server/src/**/*.ts'], // add 'shared/src/**/*.ts' and 'client/src/**/*.ts'
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        projectService: true,
+        project: [
+          './server/tsconfig.json',
+        ],
         tsconfigRootDir: import.meta.dirname
       }
     },
@@ -25,6 +28,20 @@ export default [
       semi: ['error', 'never'],
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }]
+    }
+  },
+
+  {
+    files: ['server/src/tests/**/*.ts'],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        project: ['./server/tsconfig.test.json'],
+        tsconfigRootDir: import.meta.dirname
+      }
+    },
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'off' // Avoid false positives in tests.
     }
   }
 ]
