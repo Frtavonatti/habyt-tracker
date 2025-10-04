@@ -21,11 +21,11 @@
 - [x] Ensure referential integrity between User and Habyt.
 
 ## 4. Controllers & Routes
-- [/] User can create, read, update, and delete Habyts.
-- [ ] Only allow users to manage their own Habyts.
-- [ ] Basic authentication (JWT or session-based) for user actions.
-- [ ] Implement tests for authentication logic to ensure security and correctness.
-- [ ] Write tests for CRUD operations on Habyts to verify user access control.
+- [x] User can create, read, update, and delete Habyts.
+- [x] Only allow users to manage their own Habyts.
+- [x] Basic authentication (JWT or session-based) for user actions.
+- [x] Implement tests for authentication logic to ensure security and correctness.
+- [x] Write tests for CRUD operations on Habyts to verify user access control.
 - [ ] Add tests for model relationships and referential integrity.
 
 ## 5. Future Scalability
@@ -34,7 +34,7 @@
 - [ ] Design API responses to be easily consumed by a frontend (e.g., React).
 
 ## 6. Best Practices
-- [ ] Use migrations for database schema changes.
+- [x] Use migrations for database schema changes.
 - [ ] Organize code into modules: models, controllers, routes, services.
 - [ ] Write unit and integration tests for critical endpoints.
 - [ ] Document API endpoints for frontend integration.
@@ -60,28 +60,28 @@
 ### Authentication & Security
 - [x] JWT middleware (`authRequired`) implemented
 - [ ] `Request` augmented with `authUser`
-- [ ] Protected routes (create Habyt, delete Habyt, delete User)
+- [x] Protected routes (create Habyt, delete Habyt, delete User)
 - [ ] Ownership verification on DELETE Habyt/User
-- [ ] Do not expose `passwordHash` in responses
+- [x] Do not expose `passwordHash` in responses
 - [ ] Validate `JWT_SECRET` is present on startup
 
 ### Structure & Types
-- [ ] `server/src/types/` folder created (or plan for `shared/` package)
+- [x] `server/src/types/` folder created (or plan for `shared/` package)
 - [ ] Centralized JWT payload type
 - [ ] Naming convention for DTOs / bodies (`CreateXxxBody`, `AuthTokenPayload`)
 
 ### Tests
-- [ ] Test runner (Vitest or Jest) + Supertest configured
+- [x] Test runner (Vitest or Jest) + Supertest configured
 - [ ] Minimum user fixture/seed
-- [ ] Test login (200 and 401)
+- [x] Test login (200 and 401)
 - [x] Test user creation (201 and duplicate 400)
-- [ ] Test create Habyt authenticated (201)
-- [ ] Test create Habyt without token (401)
-- [ ] Test delete own Habyt (204)
+- [x] Test create Habyt authenticated (201)
+- [x] Test create Habyt without token (401)
+- [x] Test delete own Habyt (204)
 - [ ] Test delete someone else's Habyt (403)
 
 ### Scripts / Automation
-- [ ] `test`, `test:watch` scripts added
+- [x] `test`, `test:watch` scripts added
 - [ ] Composite `verify` script (lint + typecheck + test)
 - [ ] (Optional) Local/documented CI pipeline
 

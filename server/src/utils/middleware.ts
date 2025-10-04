@@ -18,7 +18,7 @@ export const tokenExtractor = (
   next: NextFunction
 ) => {
   const authorization = req.get('authorization')
-  if (!authorization || authorization.toLowerCase().startsWith('bearer ')) {
+  if (!authorization?.toLowerCase().startsWith('bearer ')) {
     req.token = null
     req.decodedToken = null
     return res.status(401).json({ error: 'token missing' })

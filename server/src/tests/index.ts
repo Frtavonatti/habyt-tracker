@@ -13,6 +13,9 @@ async function runTests () {
   
   console.log("[tests] Running user tests...")
   await import("./users.test.js")
+
+  console.log("[tests] Running habyts tests...")
+  await import("./habyts.test.js")
   
   // Clean up after all tests
   after(async () => {

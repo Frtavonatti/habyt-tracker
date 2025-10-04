@@ -37,7 +37,7 @@ describe('GET /api/users', () => {
     const users = response.body as UserResponse[]
     assert.strictEqual(Array.isArray(users), true)
     assert.strictEqual(users.length, 1)
-    assert.strictEqual(users[0].username, initialUser.username)
+    assert.strictEqual(users[0]?.username, initialUser.username)
   })
 
   test('GET /api/users/:id returns a user by id', async () => {
