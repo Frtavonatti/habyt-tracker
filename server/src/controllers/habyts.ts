@@ -63,7 +63,7 @@ habytRouter.delete('/:id', tokenExtractor, async (req, res) => {
     return res.status(403).json({ error: 'Forbidden: You can only delete your own Habyts' })
 
   await habyt.destroy()
-  return res.status(204).json({ message: `Habyt ${req.params.id} deleted successfully` })
+  return res.status(204).end()
 })
 
 export default habytRouter
