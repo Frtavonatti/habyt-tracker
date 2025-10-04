@@ -14,6 +14,9 @@ habytRouter.get('/', async (req, res) => {
 
 habytRouter.get('/:id', async (req, res) => {
   const habyt = await Habyt.findByPk(req.params.id)
+  if (!habyt) {
+    return res.status(404).json({ error: 'Habyt not found' })
+  }
   return res.json(habyt)
 })
 
