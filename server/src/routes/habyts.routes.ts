@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { tokenExtractor } from '../middleware/auth.js'
+import { tokenExtractor } from '../middleware/index.js'
 import { 
   getAllHabyts,
   getHabyt,
