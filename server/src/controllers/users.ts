@@ -3,7 +3,7 @@ import type { Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 
 import { User } from '../models/index.js'
-import { tokenExtractor, userFinder } from '../middleware/index.js'
+import { tokenExtractor, findByUsername, findByPk } from '../middleware/index.js'
 import type { CreateUserBody, UpdateUsernameBody } from '../types/index.js'
 
 const userRouter = Router()
@@ -14,6 +14,7 @@ userRouter.get('/', async (req, res) => {
 })
 
 userRouter.get('/:id', async (req, res) => {
+  // Replace with userFinder middleware
   const user = await User.findByPk(req.params.id,  { rejectOnEmpty: false })
   if (!user)
     return res.status(404).json({ error: 'User not found' })
@@ -63,28 +64,38 @@ userRouter.post('/', async (
   })
 })
 
-userRouter.put('/:username', tokenExtractor, userFinder, async (
+userRouter.put('/:username', tokenExtractor, findByUsername, async (
   req: Request<unknown, unknown, UpdateUsernameBody>,
   res: Response
 ) => {
-  if (req.decodedToken?.id !== req.user?.id) {
+  if (req.decodedToken?.id !== req.user?.id)
     return res.status(403).json({ error: 'forbidden' })
-  }
 
   const { newUsername } = req.body
-  if (!newUsername || typeof newUsername !== 'string' || newUsername.trim() === '') {
+  if (!newUsername || typeof newUsername !== 'string' || newUsername.trim() === '')
     return res.status(400).json({ error: 'New username is required' })
-  }
 
+  const existing = await User.findOne({ where: { username: newUsername } })
+  if (existing && existing.id !== req.user!.id)
+    return res.status(400).json({ error: 'Username must be unique' })
+  
   req.user!.username = newUsername.trim()
   const updatedUser = await req.user!.save()
   return res.status(200).json(updatedUser)
 })
 
-userRouter.delete('/:id', tokenExtractor, userFinder, async (req, res) => {
-  if (req.decodedToken?.id !== req.user?.id) {
+userRouter.delete('/:id', tokenExtractor, findByPk, async (req, res) => {
+  if (req.user?.id !== req.decodedToken?.id)
     return res.status(403).json({ error: 'forbidden' })
-  }
+
+  await req.user!.destroy()
+  return res.status(204).end()
+})
+
+userRouter.delete('/username/:username', tokenExtractor, findByUsername, async (req, res) => {
+  if (req.user?.id !== req.decodedToken?.id)
+    return res.status(403).json({ error: 'forbidden' })
+
   await req.user!.destroy()
   return res.status(204).end()
 })
