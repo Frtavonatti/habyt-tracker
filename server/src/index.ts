@@ -1,8 +1,8 @@
 import express from 'express'
 
-import userRouter from './controllers/users.js'
-import loginRouter from './controllers/login.js'
-import habytRouter from './controllers/habyts.js'
+import userRouter from './routes/users.routes.js'
+import loginRouter from './routes/login.routes.js'
+import habytRouter from './routes/habyts.routes.js'
 import { connectToDatabase } from './db/index.js'
 import { PORT } from './config/index.js'
 

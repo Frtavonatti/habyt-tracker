@@ -5,7 +5,7 @@ import assert from 'node:assert'
 
 import app from '../index.js'
 import { User } from '../models/index.js'
-import type { UserResponse } from '../types/user.types.js'
+import type { UserResponse, LoginResponse } from '../types/user.types.js'
 
 interface ErrorBody {
   error: string
@@ -89,5 +89,124 @@ describe('POST /api/users', () => {
     }).expect(400)
     const body = response.body as ErrorBody
     assert.strictEqual(body.error, 'Email must be unique')
+  })
+})
+
+describe('PUT /api/users/:username', () => {
+  let token: string
+
+  beforeEach(async () => {
+    const loginResponse = await api.post('/api/login').send({
+      username: initialUser.username,
+      password: initialUser.password
+    }).expect(200)
+    token = (loginResponse.body as LoginResponse).token
+  })
+
+  test('updates user username', async () => {
+    const newUsername = 'updateduser'
+    const response = await api.put(`/api/users/${initialUser.username}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ newUsername })
+      .expect(200)
+    const updated = response.body as UserResponse
+    assert.strictEqual(updated.username, newUsername)
+    const userInDb = await User.findOne({ where: { username: newUsername } })
+    assert.ok(userInDb)
+  })
+
+  test('fails to update to an existing username', async () => {
+    const anotherUser = {
+      username: 'anotheruser',
+      name: 'Another User',
+      email: 'another@mail.com',
+      password: 'password456'
+    }
+    await api.post('/api/users')
+      .send(anotherUser)
+      .expect(201)
+
+    const response = await api.put(`/api/users/${initialUser.username}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ newUsername: anotherUser.username })
+      .expect(400)
+    const body = response.body as ErrorBody
+    assert.strictEqual(body.error, 'Username must be unique')
+  })
+
+  test('fails to update non-existent user', async () => {
+    const response = await api.put('/api/users/nonexistentuser')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ newUsername: 'newusername' })
+      .expect(404)
+    const body = response.body as ErrorBody
+    assert.strictEqual(body.error, 'User not found')
+  })
+})
+
+describe('DELETE /api/users/:id', () => {
+  let token: string
+
+  beforeEach(async () => {
+    const loginResponse = await api.post('/api/login').send({
+      username: initialUser.username,
+      password: initialUser.password
+    }).expect(200)
+    token = (loginResponse.body as LoginResponse).token
+  })
+
+  test('deletes a user by id', async () => {
+    const user = await User.findOne({ where: { username: initialUser.username } })
+    await api
+    .delete(`/api/users/${user!.id}`)
+    .set('Authorization', `Bearer ${token}`)
+    .expect(204)
+    const userAfterDelete = await User.findByPk(user!.id)
+    assert.strictEqual(userAfterDelete, null)
+  })
+
+  test('deletes a user by username', async () => {
+    await api
+    .delete(`/api/users/username/${initialUser.username}`)
+    .set('Authorization', `Bearer ${token}`)
+    .expect(204)
+    const userAfterDelete = await User.findOne({ where: { username: initialUser.username } })
+    assert.strictEqual(userAfterDelete, null)
+  })
+
+  test('fails to delete non-existent user', async () => {
+    const nonexistent = 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa'
+
+    const response = await api
+    .delete(`/api/users/${nonexistent}`)
+    .set('Authorization', `Bearer ${token}`)
+    .expect(404)
+    const body = response.body as ErrorBody
+    assert.strictEqual(body.error, 'User not found')
+
+    const responseByUsername = await api
+    .delete('/api/users/username/nonexistentuser')
+    .set('Authorization', `Bearer ${token}`)
+    .expect(404)
+    const bodyByUsername = responseByUsername.body as ErrorBody
+    assert.strictEqual(bodyByUsername.error, 'User not found')
+  })
+
+  test('fails to delete another user', async () => {
+    const anotherUser = {
+      username: 'newuser',
+      name: 'New User',
+      email: 'newuser@mail.com',
+      password: 'password'
+    }
+    await api.post('/api/users').send(anotherUser).expect(201)
+    const userToDelete = await User.findOne({ where: { username: anotherUser.username } })
+
+    const response = await api
+    .delete(`/api/users/${userToDelete!.id}`)
+    .set('Authorization', `Bearer ${token}`)
+    .expect(403)
+    const body = response.body as ErrorBody
+    assert.strictEqual(body.error, 'forbidden')
   })
 })

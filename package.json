@@ -9,6 +9,8 @@
     "dev": "npm run dev -w server",
     "build": "npm run build -w server",
     "start": "npm run start -w server",
+    "test": "npm run test -w server",
+    "verify": "npm run lint && npm run typecheck && npm test",
     "typecheck": "tsc -b --pretty",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

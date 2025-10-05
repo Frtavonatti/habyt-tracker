@@ -1,12 +1,9 @@
-import { Router } from 'express'
 import type { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 
 import { User } from '../models/index.js'
 import { JWT_SECRET } from '../config/index.js'
-
-const loginRouter = Router()
 
 interface LoginBody {
   username: string
@@ -18,7 +15,10 @@ interface AuthTokenPayload {
   username: string
 }
 
-loginRouter.post('/', async (req: Request<unknown, unknown, LoginBody>, res: Response) => {
+export const login = async (
+  req: Request<unknown, unknown, LoginBody>, 
+  res: Response
+) => {
   const { username, password } = req.body
   
   if (!username || typeof username != 'string' || username.trim() === '')
@@ -47,6 +47,4 @@ loginRouter.post('/', async (req: Request<unknown, unknown, LoginBody>, res: Res
     username: user.username, 
     name: user.name 
   })
-})
-
-export default loginRouter
+}
