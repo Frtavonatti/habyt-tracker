@@ -2,8 +2,8 @@ import { Router } from 'express'
 import type { Request, Response } from 'express'
 
 import { Habyt, User } from '../models/index.js'
-import { tokenExtractor } from '../utils/middleware.js'
-import type { CreateHabytBody } from '../types/habyt.types.js'
+import { tokenExtractor } from '../middleware/auth.js'
+import type { CreateHabytBody } from '../types/index.js'
 
 const habytRouter = Router()
 

@@ -1,4 +1,4 @@
-import { sequelize } from "./db.js"
+import { sequelize } from "../index.js"
 
 const dropTables = async () => {
   try {

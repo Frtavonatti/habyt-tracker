@@ -3,8 +3,8 @@ import express from 'express'
 import userRouter from './controllers/users.js'
 import loginRouter from './controllers/login.js'
 import habytRouter from './controllers/habyts.js'
-import { connectToDatabase } from './utils/db.js'
-import { PORT } from './utils/config.js'
+import { connectToDatabase } from './db/index.js'
+import { PORT } from './config/index.js'
 
 const app = express()
 app.use(express.json())

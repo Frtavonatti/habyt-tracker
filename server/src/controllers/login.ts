@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 
 import { User } from '../models/index.js'
-import { JWT_SECRET } from '../utils/config.js'
+import { JWT_SECRET } from '../config/index.js'
 
 const loginRouter = Router()
 

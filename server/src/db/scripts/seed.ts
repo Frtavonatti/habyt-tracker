@@ -1,4 +1,4 @@
-import { Habyt, User } from "../models/index.js"
+import { Habyt, User } from "../../models/index.js"
 
 async function seed() {
   // await sequelize.sync({ force: true }) This will drop tables and recreate them

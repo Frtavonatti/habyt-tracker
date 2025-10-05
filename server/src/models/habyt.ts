@@ -6,7 +6,7 @@ import type {
   ForeignKey,
 } from "sequelize"
 
-import { sequelize } from "../utils/db.js"
+import { sequelize } from "../db/index.js"
 import type { User } from "./index.js"
 
 export class Habyt extends Model<

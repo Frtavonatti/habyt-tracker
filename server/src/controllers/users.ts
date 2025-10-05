@@ -3,8 +3,8 @@ import type { Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 
 import { User } from '../models/index.js'
-import { tokenExtractor, userFinder } from '../utils/middleware.js'
-import type { CreateUserBody, UpdateUsernameBody } from '../types/user.types.js'
+import { tokenExtractor, userFinder } from '../middleware/index.js'
+import type { CreateUserBody, UpdateUsernameBody } from '../types/index.js'
 
 const userRouter = Router()
 

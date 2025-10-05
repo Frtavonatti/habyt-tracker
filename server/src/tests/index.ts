@@ -1,4 +1,4 @@
-import { sequelize } from "../utils/db.js"
+import { sequelize } from "../db/index.js"
 import { after } from "node:test"
 
 // Database setup
