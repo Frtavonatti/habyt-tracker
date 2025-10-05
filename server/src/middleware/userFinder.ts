@@ -17,9 +17,11 @@ const userFinder = (findFn: (req: Request) => Promise<User | null>): RequestHand
   }
 
 export const findByPk = userFinder(req => User.findByPk(req.params.id))
+
 export const findByUsername = userFinder(req => User.findOne({ 
   where: { username: req.params.username } 
 }))
+
 export const findByDecodedTokenId = userFinder(req => 
   User.findByPk(req.decodedToken?.id as string | undefined)
 )

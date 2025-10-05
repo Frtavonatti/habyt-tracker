@@ -1,26 +1,22 @@
-import { Router } from 'express'
 import type { Request, Response } from 'express'
 
 import { Habyt, User } from '../models/index.js'
-import { tokenExtractor } from '../middleware/auth.js'
 import type { CreateHabytBody } from '../types/index.js'
 
-const habytRouter = Router()
-
-habytRouter.get('/', async (req, res) => {
+export const getAllHabyts = async (req: Request, res: Response) => {
   const habyts = await Habyt.findAll()
   return res.json(habyts)
-})
+}
 
-habytRouter.get('/:id', async (req, res) => {
+export const getHabyt = async (req: Request, res: Response) => {
   const habyt = await Habyt.findByPk(req.params.id)
   if (!habyt) {
     return res.status(404).json({ error: 'Habyt not found' })
   }
   return res.json(habyt)
-})
+}
 
-habytRouter.post('/', tokenExtractor, async (
+export const createNewHabyt = async (
   req: Request<unknown, unknown, CreateHabytBody>,
   res: Response
 ) => {
@@ -51,9 +47,9 @@ habytRouter.post('/', tokenExtractor, async (
   })
 
   return res.status(201).json(newHabyt)
-})
+}
 
-habytRouter.delete('/:id', tokenExtractor, async (req, res) => {
+export const deleteHabyt = async (req: Request, res: Response) => {
   const user = await User.findByPk(req.decodedToken?.id as string | undefined)
   if (!user) {
     return res.status(401).json({ error: 'User not found' })
@@ -67,6 +63,4 @@ habytRouter.delete('/:id', tokenExtractor, async (req, res) => {
 
   await habyt.destroy()
   return res.status(204).end()
-})
-
-export default habytRouter
+}

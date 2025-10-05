@@ -35,8 +35,8 @@
 
 ## 6. Best Practices
 - [x] Use migrations for database schema changes.
-- [ ] Organize code into modules: models, controllers, routes, services.
-- [ ] Write unit and integration tests for critical endpoints.
+- [/] Organize code into modules: models, controllers, routes, services.
+- [/] Write unit and integration tests for critical endpoints.
 - [ ] Document API endpoints for frontend integration.
 
 ---
@@ -53,17 +53,17 @@
 > These items must be completed before merging the stable version into `dev`.
 
 ### Code Quality
-- [ ] Lint passes with no errors (`npm run lint`)
-- [ ] Typecheck/build passes with no errors (`npm run typecheck`)
-- [ ] ESLint configured with `parserOptions.project` (type-aware enabled)
+- [x] Lint passes with no errors (`npm run lint`)
+- [x] Typecheck/build passes with no errors (`npm run typecheck`)
+- [x] ESLint configured with `parserOptions.project` (type-aware enabled)
 
 ### Authentication & Security
 - [x] JWT middleware (`authRequired`) implemented
 - [ ] `Request` augmented with `authUser`
 - [x] Protected routes (create Habyt, delete Habyt, delete User)
-- [ ] Ownership verification on DELETE Habyt/User
+- [x] Ownership verification on DELETE Habyt/User
 - [x] Do not expose `passwordHash` in responses
-- [ ] Validate `JWT_SECRET` is present on startup
+- [x] Validate `JWT_SECRET` is present on startup
 
 ### Structure & Types
 - [x] `server/src/types/` folder created (or plan for `shared/` package)
@@ -72,17 +72,17 @@
 
 ### Tests
 - [x] Test runner (Vitest or Jest) + Supertest configured
-- [ ] Minimum user fixture/seed
+- [x] Minimum user fixture/seed
 - [x] Test login (200 and 401)
 - [x] Test user creation (201 and duplicate 400)
 - [x] Test create Habyt authenticated (201)
 - [x] Test create Habyt without token (401)
 - [x] Test delete own Habyt (204)
-- [ ] Test delete someone else's Habyt (403)
+- [x] Test delete someone else's Habyt (403)
 
 ### Scripts / Automation
 - [x] `test`, `test:watch` scripts added
-- [ ] Composite `verify` script (lint + typecheck + test)
+- [x] Composite `verify` script (lint + typecheck + test)
 - [ ] (Optional) Local/documented CI pipeline
 
 ### Documentation
@@ -90,11 +90,6 @@
 - [ ] README: how to start environment (Docker + dev)
 - [ ] Example requests (login, create habyt)
 - [ ] `.env.example` updated
-
-### Git / Branch
-- [ ] Commits squashed or clearly structured
-- [ ] PR with checklist marked
-- [ ] (Optional) Tag `v0.1.0-dev` post-merge
 
 ### Final Review
 - [ ] Environment variables sanitized

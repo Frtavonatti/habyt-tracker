@@ -1,28 +1,27 @@
-import { Router } from 'express'
 import type { Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 
 import { User } from '../models/index.js'
-import { tokenExtractor, findByUsername, findByPk } from '../middleware/index.js'
 import type { CreateUserBody, UpdateUsernameBody } from '../types/index.js'
 
-const userRouter = Router()
-
-userRouter.get('/', async (req, res) => {
+export const getAllUsers = async (req: Request, res: Response) => {
   const users = await User.findAll()
   return res.json(users)
-})
+}
 
-userRouter.get('/:id', async (req, res) => {
-  // Replace with userFinder middleware
-  const user = await User.findByPk(req.params.id,  { rejectOnEmpty: false })
+export const getUserById = async (req: Request, res: Response) => {
+  const { id } = req.params
+  if (!id)
+    return res.status(400).json({ error: 'User ID is required' })
+
+  const user = await User.findByPk(id,  { rejectOnEmpty: false })
   if (!user)
     return res.status(404).json({ error: 'User not found' })
   
   return res.json(user)
-})
+}
 
-userRouter.post('/', async (
+export const createNewUser = async (
   req: Request<unknown, unknown, CreateUserBody>, 
   res: Response
 ) => {
@@ -62,9 +61,9 @@ userRouter.post('/', async (
     name: newUser.name,
     email: newUser.email
   })
-})
+}
 
-userRouter.put('/:username', tokenExtractor, findByUsername, async (
+export const changeUsername = async (
   req: Request<unknown, unknown, UpdateUsernameBody>,
   res: Response
 ) => {
@@ -82,22 +81,20 @@ userRouter.put('/:username', tokenExtractor, findByUsername, async (
   req.user!.username = newUsername.trim()
   const updatedUser = await req.user!.save()
   return res.status(200).json(updatedUser)
-})
+}
 
-userRouter.delete('/:id', tokenExtractor, findByPk, async (req, res) => {
+export const deleteUserById = async (req: Request, res: Response) => {
   if (req.user?.id !== req.decodedToken?.id)
     return res.status(403).json({ error: 'forbidden' })
 
   await req.user!.destroy()
   return res.status(204).end()
-})
+}
 
-userRouter.delete('/username/:username', tokenExtractor, findByUsername, async (req, res) => {
+export const deleteUserByUsername = async (req: Request, res: Response) => {
   if (req.user?.id !== req.decodedToken?.id)
     return res.status(403).json({ error: 'forbidden' })
 
   await req.user!.destroy()
   return res.status(204).end()
-})
-
-export default userRouter
+}
