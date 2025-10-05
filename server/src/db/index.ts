@@ -1,9 +1,6 @@
-import path from "path"
-import { fileURLToPath } from "url"
 import { Sequelize } from "sequelize"
-import { Umzug, SequelizeStorage } from "umzug"
 
-import { DATABASE_URL, TEST_DATABASE_URL, DEV_DATABASE_URL } from "./config.js"
+import { DATABASE_URL, TEST_DATABASE_URL, DEV_DATABASE_URL } from "../config/index.js"
 
 function getDbUrl(): string {
   switch (process.env.NODE_ENV) {
@@ -26,27 +23,6 @@ export const sequelize = new Sequelize(dbUrl, {
   dialect: "postgres",
   logging: process.env.NODE_ENV === "development" ? console.log : false,
 })
-
-// ES module __dirname workaround
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-const migrationConf = {
-  migrations: {
-    glob: path.join(__dirname, "../migrations/*.ts"),
-  },
-  storage: new SequelizeStorage({ sequelize, tableName: "migrations" }),
-  context: sequelize.getQueryInterface(),
-  logger: console,
-}
-
-export const runMigrations = async () => {
-  const migrator = new Umzug(migrationConf)
-  const migrations = await migrator.up()
-  console.log("Migrations up to date", {
-    files: migrations.map((mig) => mig.name)
-  })
-}
 
 export const connectToDatabase = async () => {
   try {

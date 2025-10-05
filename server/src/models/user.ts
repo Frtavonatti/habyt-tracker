@@ -5,7 +5,7 @@ import type {
   CreationOptional,
 } from "sequelize"
 
-import { sequelize } from "../utils/db.js"
+import { sequelize } from "../db/index.js"
 
 class User extends Model<
   InferAttributes<User>,
