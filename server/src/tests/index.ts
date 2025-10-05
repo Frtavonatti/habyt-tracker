@@ -1,5 +1,11 @@
-import { sequelize } from "../db/index.js"
+import path from "node:path"
+import { fileURLToPath, pathToFileURL } from "node:url"
 import { after } from "node:test"
+
+import { sequelize } from "../db/index.js"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // Database setup
 console.log("[tests] Syncing database (force: true)...")
@@ -8,14 +14,17 @@ console.log("[tests] Database ready")
 
 // Main test orchestration
 async function runTests () {
-  console.log("[tests] Running login tests...")
-  await import("./login.test.js")
-  
-  console.log("[tests] Running user tests...")
-  await import("./users.test.js")
+  const testFiles = [
+    "login.test.js",
+    "users.test.js",
+    "habyts.test.js"
+  ]
 
-  console.log("[tests] Running habyts tests...")
-  await import("./habyts.test.js")
+  for (const file of testFiles) {
+    console.log(`[tests] Running ${file.replace('.js', '')}...`)
+    const fileUrl = pathToFileURL(path.join(__dirname, file)).href
+    await import(fileUrl)
+  }
   
   // Clean up after all tests
   after(async () => {
