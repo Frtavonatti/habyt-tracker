@@ -3,9 +3,9 @@ import bcrypt from 'bcrypt'
 import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert'
 
-import app from '../index.js'
-import { User } from '../models/index.js'
-import type { UserResponse, LoginResponse } from '../types/user.types.js'
+import app from '../src/index.js'
+import { User } from '../src/models/index.js'
+import type { UserResponse, LoginResponse } from '../src/types/user.types.js'
 
 interface ErrorBody {
   error: string

@@ -3,10 +3,10 @@ import bcrypt from "bcrypt"
 import { test, describe, beforeEach } from "node:test"
 import assert from "node:assert"
 
-import app from "../index.js"
-import { User, Habyt } from "../models/index.js"
-import type { HabytResponse } from "../types/habyt.types.js"
-import type { LoginResponse } from "../types/user.types.js"
+import app from "../src/index.js"
+import { User, Habyt } from "../src/models/index.js"
+import type { HabytResponse } from "../src/types/habyt.types.js"
+import type { LoginResponse } from "../src/types/user.types.js"
 
 const api = supertest(app)
 

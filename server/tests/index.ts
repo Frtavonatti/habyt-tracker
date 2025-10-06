@@ -2,7 +2,7 @@ import path from "node:path"
 import { fileURLToPath, pathToFileURL } from "node:url"
 import { after } from "node:test"
 
-import { sequelize } from "../db/index.js"
+import { sequelize } from "../src/db/index.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)

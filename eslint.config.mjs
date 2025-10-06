@@ -32,11 +32,11 @@ export default [
   },
 
   {
-    files: ['server/src/tests/**/*.ts'],
+    files: ['server/tests/**/*.ts'],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        project: ['./server/tsconfig.test.json'],
+        project: ['./server/tests/tsconfig.test.json'],
         tsconfigRootDir: import.meta.dirname
       }
     },
