@@ -7,7 +7,7 @@ import type {
 } from "sequelize"
 
 import { sequelize } from "../db/index.js"
-import type { User } from "./index.js"
+import type User from "./user.js"
 
 export class Habyt extends Model<
   InferAttributes<Habyt>,

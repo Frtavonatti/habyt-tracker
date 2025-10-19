@@ -2,7 +2,7 @@ import type { Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 
 import { User } from '../models/index.js'
-import type { CreateUserBody, UpdateUsernameBody } from '../types/index.js'
+import type { UserCreateBody, UsernameUpdateBody } from '../types/index.js'
 
 export const getAllUsers = async (req: Request, res: Response) => {
   const users = await User.findAll()
@@ -22,7 +22,7 @@ export const getUserById = async (req: Request, res: Response) => {
 }
 
 export const createNewUser = async (
-  req: Request<unknown, unknown, CreateUserBody>, 
+  req: Request<unknown, unknown, UserCreateBody>, 
   res: Response
 ) => {
   const { username, name, email, password } = req.body
@@ -64,7 +64,7 @@ export const createNewUser = async (
 }
 
 export const changeUsername = async (
-  req: Request<unknown, unknown, UpdateUsernameBody>,
+  req: Request<unknown, unknown, UsernameUpdateBody>,
   res: Response
 ) => {
   if (req.decodedToken?.id !== req.user?.id)

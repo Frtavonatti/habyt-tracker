@@ -1,11 +1,11 @@
-export interface CreateUserBody {
+export interface UserCreateBody {
   username: string
   name: string
   password: string
   email: string
 }
 
-export interface UpdateUsernameBody {
+export interface UsernameUpdateBody {
   newUsername: string
 }
 

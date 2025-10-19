@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express'
 
 import { Habyt, User } from '../models/index.js'
-import type { CreateHabytBody } from '../types/index.js'
+import type { HabytCreateBody } from '../types/index.js'
 
 export const getAllHabyts = async (req: Request, res: Response) => {
   const habyts = await Habyt.findAll()
@@ -17,7 +17,7 @@ export const getHabyt = async (req: Request, res: Response) => {
 }
 
 export const createNewHabyt = async (
-  req: Request<unknown, unknown, CreateHabytBody>,
+  req: Request<unknown, unknown, HabytCreateBody>,
   res: Response
 ) => {
   const { title, description }: {

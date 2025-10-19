@@ -1,4 +1,4 @@
-export interface CreateHabytBody {
+export interface HabytCreateBody {
   title: string
   description?: string | null
   token?: string

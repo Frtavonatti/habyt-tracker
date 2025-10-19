@@ -1,4 +1,5 @@
-import { Habyt, User } from "../../models/index.js"
+import { Habyt, User, Entry } from "../../models/index.js"
+import { toDateOnlyUTC } from "../../utils/toDateOnly.js"
 
 async function seed() {
   // await sequelize.sync({ force: true }) This will drop tables and recreate them
@@ -10,7 +11,7 @@ async function seed() {
     passwordHash: "hashedpassword",
   })
 
-  await Habyt.bulkCreate([
+  const habyts = await Habyt.bulkCreate([
     {
       title: "Test Habyt",
       description: "This is a test habyt.",
@@ -23,6 +24,23 @@ async function seed() {
     },
   ])
 
+  const today = new Date()
+  const todayUTC = toDateOnlyUTC(today)
+  const tomorrowUTC = toDateOnlyUTC(new Date(today.getTime() + 24 * 60 * 60 * 1000))
+
+  await Entry.bulkCreate([
+    {
+      date: todayUTC,
+      completed: true,
+      habytId: habyts[0]!.id,
+    },
+    {
+      date: tomorrowUTC,
+      completed: false,
+      habytId: habyts[0]!.id,
+    },
+  ], { validate: true })
+  
   console.log("Seeding complete.")
 }
 
