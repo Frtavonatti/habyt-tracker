@@ -103,6 +103,55 @@ describe("POST /api/habyts", () => {
   })
 })
 
+describe("PUT /api/habyts/:id", () => {
+  test("updates a habyt with valid data and token", async () => {
+    const loginResponse = await api.post("/api/login").send({
+      username: initialUser.username,
+      password: initialUser.password,
+    }).expect(200)
+
+    const { token } = loginResponse.body as LoginResponse
+    const habytToUpdate = await Habyt.findOne({ where: { title: habytList[0]!.title } })
+    assert(habytToUpdate, "Habyt to update should exist")
+
+    const updatedData = { title: "Updated Title", description: "Updated Description" }
+    const response = await api.put(`/api/habyts/${habytToUpdate.id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(updatedData)
+      .expect(200)
+
+    const updatedHabyt = response.body as HabytResponse
+    assert.strictEqual(updatedHabyt.title, updatedData.title)
+    assert.strictEqual(updatedHabyt.description, updatedData.description)
+  })
+
+  test("fails with 404 if habyt does not exist", async () => {
+    const loginResponse = await api.post("/api/login").send({
+      username: initialUser.username,
+      password: initialUser.password,
+    }).expect(200)
+
+    const { token } = loginResponse.body as LoginResponse
+    const nonExistentId = "99999999-9999-9999-9999-999999999999"
+    const updatedData = { title: "Non-existent", description: "This habyt does not exist" }
+
+    await api.put(`/api/habyts/${nonExistentId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(updatedData)
+      .expect(404)
+  })
+
+  test("fails with 401 if token is missing", async () => {
+    const habytToUpdate = await Habyt.findOne({ where: { title: habytList[0]!.title } })
+    assert(habytToUpdate, "Habyt to update should exist")
+
+    const updatedData = { title: "No Auth", description: "Missing token" }
+    await api.put(`/api/habyts/${habytToUpdate.id}`)
+      .send(updatedData)
+      .expect(401)
+  })
+})
+
 describe("DELETE /api/habyts/:id", () => {
   test("deletes a habyt with valid id and token", async () => {
     const loginResponse = await api.post("/api/login").send({

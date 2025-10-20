@@ -5,6 +5,12 @@ export interface HabytCreateBody {
   decodedToken?: { id: string, username: string } | null
 }
 
+export interface HabytUpdateBody {
+  title: string
+  description: string | null
+  decodedToken?: { id: string, username: string } | null
+}
+
 export interface HabytResponse {
   id: string
   title: string
