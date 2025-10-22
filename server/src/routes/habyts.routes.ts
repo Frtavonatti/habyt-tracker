@@ -12,8 +12,10 @@ const habytRouter = Router()
 
 habytRouter.get('/', getAllHabyts)
 habytRouter.get('/:id', getHabyt)
-habytRouter.post('/', tokenExtractor, createNewHabyt)
-habytRouter.put('/:id', tokenExtractor, updateHabyt)
-habytRouter.delete('/:id', tokenExtractor, deleteHabyt)
+
+habytRouter.use(tokenExtractor)
+habytRouter.post('/', createNewHabyt)
+habytRouter.put('/:id', updateHabyt)
+habytRouter.delete('/:id', deleteHabyt)
 
 export default habytRouter

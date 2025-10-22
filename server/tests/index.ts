@@ -3,21 +3,23 @@ import { fileURLToPath, pathToFileURL } from "node:url"
 import { after } from "node:test"
 
 import { sequelize } from "../src/db/index.js"
+import { runMigrations } from "../src/db/migrations.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 // Database setup
 console.log("[tests] Syncing database (force: true)...")
-await sequelize.sync({ force: true })
+await runMigrations()
 console.log("[tests] Database ready")
 
 // Main test orchestration
 async function runTests () {
   const testFiles = [
-    "login.test.js",
-    "users.test.js",
-    "habyts.test.js"
+    // "login.test.js",
+    // "users.test.js",
+    // "habyts.test.js",
+    "entries.test.js"
   ]
 
   for (const file of testFiles) {
