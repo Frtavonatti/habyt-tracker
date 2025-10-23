@@ -16,9 +16,9 @@ console.log("[tests] Database ready")
 // Main test orchestration
 async function runTests () {
   const testFiles = [
-    // "login.test.js",
-    // "users.test.js",
-    // "habyts.test.js",
+    "login.test.js",
+    "users.test.js",
+    "habyts.test.js",
     "entries.test.js"
   ]
 

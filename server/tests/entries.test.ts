@@ -19,32 +19,8 @@ const initialUser = {
 }
 
 const initialHabyt = { title: "Read Books", description: "Read for 30 minutes daily" }
-
 const initialEntry = { completed: true, timeSpentMinutes: 30 }
-
-beforeEach(async () => {
-  await User.destroy({ where: {} })
-  await Habyt.destroy({ where: {} })
-  await Entry.destroy({ where: {} })
-
-  const passwordHash = await bcrypt.hash(initialUser.password, 10)
-  const user = await User.create({
-    username: initialUser.username,
-    name: initialUser.name,
-    email: initialUser.email,
-    passwordHash,
-  })
-
-  const habyt = await Habyt.create({ ...initialHabyt, userId: user.id })
-
-  const initialDate = toDateOnlyUTC(new Date("August 20, 2025 23:15:30"))
-
-  await Entry.create({
-    ...initialEntry,
-    date: initialDate,
-    habytId: habyt.id
-  })
-})
+const nonExistentId = "99999999-9999-9999-9999-999999999999"
 
 const loginAndGetToken = async () => {
   const loginResponse = await api.post('/api/login').send({
@@ -54,12 +30,25 @@ const loginAndGetToken = async () => {
   return (loginResponse.body as LoginResponse).token
 }
 
+let user: User, habyt: Habyt, token: string
+
+beforeEach(async () => {
+  await User.destroy({ where: {} })
+  await Habyt.destroy({ where: {} })
+  await Entry.destroy({ where: {} })
+
+  const passwordHash = await bcrypt.hash(initialUser.password, 10)
+  user = await User.create({ ...initialUser, passwordHash })
+  habyt = await Habyt.create({ ...initialHabyt, userId: user.id })
+  token = await loginAndGetToken()
+
+  const initialDate = toDateOnlyUTC(new Date("August 20, 2025 23:15:30"))
+  await Entry.create({ ...initialEntry, date: initialDate, habytId: habyt.id })
+})
+
 
 describe("GET /habyts/:habytId/entries", () => {
   test("authenticated request return all habyt entries", async () => {
-    const token = await loginAndGetToken()
-    const habyt = await Habyt.findOne({ where: { title: initialHabyt.title } })
-
     const response = await api
       .get(`/api/habyts/${habyt?.id}/entries`)
       .set('Authorization', `Bearer ${token}`)
@@ -72,16 +61,12 @@ describe("GET /habyts/:habytId/entries", () => {
   })
 
   test("fails with a 401 if token is missing", async () => {
-    const habyt = await Habyt.findOne({ where: { title: initialHabyt.title } })
     await api.get(`/api/habyts/${habyt?.id}/entries`).expect(401)
   })
 })
 
 describe("POST /habyts/:habytId/entries", () => {
   test("creates a new entry with valid data and token", async () => {
-    const token = await loginAndGetToken()
-    const habyt = await Habyt.findOne({ where: { title: initialHabyt.title } })
-
     const newEntry = {
       completed: true,
       timeSpentMinutes: 180,
@@ -98,10 +83,7 @@ describe("POST /habyts/:habytId/entries", () => {
   })
 
   test("fails with 400 if timeSpentMinutes is negative", async () => {
-    const token = await loginAndGetToken()
-    const habyt = await Habyt.findOne({ where: { title: initialHabyt.title } })
     const newEntry = { timeSpentMinutes: -1 }
-
     await api.post(`/api/habyts/${habyt?.id}/entries`)
       .set("Authorization", `Bearer ${token}`)
       .send(newEntry)
@@ -109,9 +91,6 @@ describe("POST /habyts/:habytId/entries", () => {
   })
 
   test("fails with 409 if there is already an entry for the entry date", async () => {
-    const token = await loginAndGetToken()
-    const habyt = await Habyt.findOne({ where: { title: initialHabyt.title } })
-
     const entries = [
       { completed: true, timeSpentMinutes: 180 },
       { completed: false }
@@ -131,7 +110,6 @@ describe("POST /habyts/:habytId/entries", () => {
 
 describe("PATCH /entries/:id", () => {
   test('updates an entry with valid data and token', async () => {
-    const token = await loginAndGetToken()
     const entry = await Entry.findOne({ where: { timeSpentMinutes: initialEntry.timeSpentMinutes } })
     
     const updatedEntry = await api.patch(`/api/entries/${entry?.id}`)
@@ -153,7 +131,6 @@ describe("PATCH /entries/:id", () => {
   })
 
   test('fails with 404 with invalid entryId', async ()=> {
-    const nonExistentId = "99999999-9999-9999-9999-999999999999"
     const updateEntryData = { timeSpentMinutes: 120 }
     await api.patch(`/api/entries/${nonExistentId}`)
       .send({ completed: updateEntryData.timeSpentMinutes })
@@ -163,37 +140,27 @@ describe("PATCH /entries/:id", () => {
 
 describe("DELETE /entries/:id", () => {
   test('deletes an entry successfully with valid token', async () => {
-    const token = await loginAndGetToken()
     const entry = await Entry.findOne({ where: { timeSpentMinutes: initialEntry.timeSpentMinutes } })
-    const habyt = await Habyt.findOne({ where: { title: initialHabyt.title } }) 
-
     const entriesBefore = await Entry.findAll({ where: { habytId: habyt?.id } })
-    
+
     await api.delete(`/api/entries/${entry?.id}`)
       .set("Authorization", `Bearer ${token}`)
       .expect(204)
 
     const entriesAfter = await Entry.findAll({ where: { habytId: habyt?.id } })
-    
     assert.strictEqual(entriesAfter.length, entriesBefore.length - 1)
   })
 
   test('deletes fail with 401 if invalid token', async () => {
     const entry = await Entry.findOne({ where: { timeSpentMinutes: initialEntry.timeSpentMinutes } })
-    const habyt = await Habyt.findOne({ where: { title: initialHabyt.title } }) 
-
     const entriesBefore = await Entry.findAll({ where: { habytId: habyt?.id } })
     await api.delete(`/api/entries/${entry?.id}`).expect(401)
     const entriesAfter = await Entry.findAll({ where: { habytId: habyt?.id } })
-    
     assert.strictEqual(entriesAfter.length, entriesBefore.length)
   })
 
   test('deletes fail with 404 if invalid params',async () => {
-    const token = await loginAndGetToken()
     const habyt = await Habyt.findOne({ where: { title: initialHabyt.title } })
-    const nonExistentId = "99999999-9999-9999-9999-999999999999"
-
     const entriesBefore = await Entry.findAll({ where: { habytId: habyt?.id } })
     
     await api.delete(`/api/entries/${nonExistentId}`)
@@ -201,7 +168,6 @@ describe("DELETE /entries/:id", () => {
       .expect(404)
 
     const entriesAfter = await Entry.findAll({ where: { habytId: habyt?.id } })
-    
     assert.strictEqual(entriesAfter.length, entriesBefore.length)
   })
 })
