@@ -28,7 +28,7 @@ export const listEntries = async (
     where: { habytId },
     order: [['date', 'DESC']] 
   })
-  
+
   return res.json(entries.map(toEntryBase))
 }
 
@@ -46,20 +46,30 @@ export const createEntry = async (
   if (timeSpentMinutes !== null && (typeof timeSpentMinutes !== 'number' || timeSpentMinutes < 0))
     return res.status(400).json({ error: 'timeSpentMinutes must be a non negative number or null' })
 
-  const user = await User.findByPk(req.decodedToken?.id as string | undefined)
-  if (!user) return res.status(404).json({ error: 'User not found' })
-
   const habyt = await Habyt.findByPk(habytId)
   if (!habyt) return res.status(404).json({ error: 'Habyt not found' })
 
-  const newEntry = await Entry.create({
-    date: toDateOnlyUTC(new Date()),
-    completed,
-    timeSpentMinutes,
-    habytId
-  })
+  const user = await User.findByPk(req.decodedToken?.id as string | undefined)
+  if (!user) return res.status(404).json({ error: 'User not found' })
+  if (user.id !== habyt.userId) 
+    return res.status(403).json({ error: 'Forbidden: only the habyt owner can add new entries' })
 
-  return res.status(201).json(toEntryBase(newEntry))
+  const date = toDateOnlyUTC(new Date())
+
+  try {
+    const newEntry = await Entry.create({
+      date,
+      completed,
+      timeSpentMinutes,
+      habytId
+    })
+    return res.status(201).json(toEntryBase(newEntry))
+  } catch (error: unknown) {
+    if ((error as { name: string }).name === "SequelizeUniqueConstraintError") {
+      return res.status(409).json({ error: "Entry for this date already exists" })
+    }
+    throw error
+  }
 }
 
 export const updateEntry = async (
@@ -82,7 +92,11 @@ export const updateEntry = async (
   const entry = await Entry.findByPk(id)
     if (!entry) return res.status(404).json({ error: 'Entry not found' })
 
-  const updatedEntry = await entry.update({ completed, timeSpentMinutes })
+  const updates: EntryUpdateBody = { completed }
+  if (timeSpentMinutes !== null && timeSpentMinutes !== undefined)
+    updates.timeSpentMinutes = timeSpentMinutes
+
+  const updatedEntry = await entry.update(updates)
 
   return res.json(toEntryBase(updatedEntry))
 }
