@@ -1,3 +1,5 @@
+import type Habyt from "../models/habyt.js"
+
 export interface HabytCreateBody {
   title: string
   description?: string | null
@@ -19,3 +21,16 @@ export interface HabytResponse {
   createdAt: string
   updatedAt: string
 }
+
+// Services
+export interface HabytCreateData {
+  title: string,
+  description: string | null,
+  userId: string 
+}
+
+export interface HabytUpdateData extends HabytCreateData {
+  id: string,
+}
+
+export type HabytUpdateResult = { habyt: Habyt } | { error: string } 

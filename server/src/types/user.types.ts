@@ -1,7 +1,16 @@
+import type User from "../models/user.js"
+
 export interface UserCreateBody {
   username: string
   name: string
   password: string
+  email: string
+}
+
+export interface UserCreateData {
+  username: string
+  name: string
+  passwordHash: string
   email: string
 }
 
@@ -26,3 +35,7 @@ export interface LoginResponse {
   username: string
   name: string
 }
+
+// Services
+export type FindUserResult = User | { error: string }
+export type CreateUserResult = UserResponse | { error: string }

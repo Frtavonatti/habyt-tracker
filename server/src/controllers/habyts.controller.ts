@@ -1,18 +1,18 @@
 import type { Request, Response } from 'express'
 
-import { Habyt, User } from '../models/index.js'
+import * as habytService from '../services/habyt.service.js'
+import { findUserById } from '../services/user.service.js'
 import type { HabytCreateBody, HabytUpdateBody } from '../types/index.js'
 
 export const getAllHabyts = async (req: Request, res: Response) => {
-  const habyts = await Habyt.findAll()
+  const habyts = await habytService.findAllHabyts()
   return res.json(habyts)
 }
 
 export const getHabyt = async (req: Request<{ id: string }>, res: Response) => {
-  const habyt = await Habyt.findByPk(req.params.id)
-  if (!habyt) {
-    return res.status(404).json({ error: 'Habyt not found' })
-  }
+  const habyt = await habytService.findHabytById(req.params.id)
+  if ('error' in habyt)
+    return res.status(404).json({ error: habyt.error })
   return res.json(habyt)
 }
 
@@ -31,16 +31,16 @@ export const createNewHabyt = async (
   if (description !== undefined && description !== null && typeof description != 'string')
     return res.status(400).json({ error: 'Description must be a string' })
 
-  const user = await User.findByPk(req.decodedToken?.id as string | undefined)
-  if (!user)
-    return res.status(401).json({ error: 'User not found' })
+  const user = await findUserById(req.decodedToken?.id as string | undefined)
+  if ('error' in user)
+    return res.status(user.error === 'Missing id' ? 400 : 404).json({ error: user.error })
 
   const normalizedDescription =
   typeof description === 'string'
     ? (description.trim() === '' ? null : description.trim())
     : null
   
-  const newHabyt = await Habyt.create({ 
+  const newHabyt = await habytService.createHabyt({ 
     title, 
     description: normalizedDescription,
     userId: user.id
@@ -60,31 +60,51 @@ export const updateHabyt = async (
   if (description !== null && typeof description != 'string')
     return res.status(400).json({ error: 'Description must be a string or null' })
 
-  const user = await User.findByPk(req.decodedToken?.id as string | undefined)
-  if (!user)
-    return res.status(401).json({ error: 'User not found' })
+  const user = await findUserById(req.decodedToken?.id as string | undefined)
+  if ('error' in user)
+    return res.status(user.error === 'Missing id' ? 400 : 404).json({ error: user.error })
 
-  const habyt = await Habyt.findByPk(req.params.id)
-  if (!habyt)
-    return res.status(404).json({ error: 'Habyt not found' })
-  if (habyt.userId !== user.id)
-    return res.status(403).json({ error: 'Forbidden: You can only update your own Habyts' })
+  const result = await habytService.updateHabyt({ 
+    id: req.params.id,
+    title,
+    description,
+    userId: user.id
+   })
+  
+  if ('error' in result) {
+    switch (result.error) {
+      case 'Habyt not found':
+        return res.status(404).json({ error: result.error })
+      case 'Forbidden':
+        return res.status(403).json({ error: 'Forbidden: You can only update your own habyts' })
+      default:
+        return res.status(400).json({ error: result.error })
+    }
+  }
 
-  await habyt.update({ title, description })
-  return res.json(habyt)
+  return res.json(result.habyt)
 }
 
 export const deleteHabyt = async (req: Request<{ id: string }>, res: Response) => {
-  const user = await User.findByPk(req.decodedToken?.id as string | undefined)
-  if (!user)
-    return res.status(401).json({ error: 'User not found' })
+  const user = await findUserById(req.decodedToken?.id as string | undefined)
+  if ('error' in user)
+    return res.status(user.error === 'Missing id' ? 400 : 404).json({ error: user.error })
 
-  const habyt = await Habyt.findByPk(req.params.id)
-  if (!habyt)
-    return res.status(404).json({ error: 'Habyt not found' })
-  if (habyt.userId !== user.id)
-    return res.status(403).json({ error: 'Forbidden: You can only delete your own Habyts' })
+  const result = await habytService.deleteHabyt({
+    id: req.params.id,
+    userId: user.id
+  })
 
-  await habyt.destroy()
+  if ('error' in result) {
+    switch (result.error) {
+      case 'Habyt not found':
+        return res.status(404).json({ error: result.error })
+      case 'Forbidden':
+        return res.status(403).json({ error: 'Forbidden: You can only delete your own habyts' })
+      default:
+        return res.status(400).json({ error: result.error })
+    }
+  }
+
   return res.status(204).end()
 }

@@ -1,3 +1,5 @@
+import type Entry from "../models/entry.js"
+
 export interface EntryBase {
   id: string
   date: string // YYYY-MM-DD (DateOnly)
@@ -20,6 +22,7 @@ export interface EntryUpdateBody {
   timeSpentMinutes?: number | null
 }
 
+export type EntryResult = Entry | { error: string }
 export type EntryResponse = EntryBase | { error: string }
 
 type WithDates<T> = Omit<T, 'createdAt' | 'updatedAt'> & {

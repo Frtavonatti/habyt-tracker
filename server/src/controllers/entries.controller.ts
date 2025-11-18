@@ -6,7 +6,10 @@ import type {
   EntryUpdateBody 
 } from '../types/entry.types.js'
 
-import { Entry, Habyt, User } from '../models/index.js'
+import * as entryService from '../services/entry.service.js'
+import { findUserById } from '../services/user.service.js'
+import { findHabytById } from '../services/habyt.service.js'
+
 import { toDateOnlyUTC } from '../utils/toDateOnly.js'
 import { toEntryBase } from '../types/entry.types.js'
 
@@ -18,17 +21,14 @@ export const listEntries = async (
   if (!habytId || typeof habytId != 'string' || habytId.trim() === '' )
     return res.status(400).json({ error: 'habytId param is required' })
 
-  const user = await User.findByPk(req.decodedToken?.id as string | undefined)
-  if (!user) return res.status(404).json({ error: 'User not found' })
+  const user = await findUserById(req.decodedToken?.id as string | undefined)
+  if ('error' in user) 
+    return res.status(user.error === 'Missing id' ? 400 : 404).json({ error: user.error })
 
-  const habyt = await Habyt.findByPk(habytId)
-  if (!habyt) return res.status(404).json({ error: 'Habyt not found' })
+  const habyt = await findHabytById(habytId)
+  if ('error' in habyt) return res.status(404).json({ error: habyt.error })
 
-  const entries = await Entry.findAll({ 
-    where: { habytId },
-    order: [['date', 'DESC']] 
-  })
-
+  const entries = await entryService.findAll(habytId)
   return res.json(entries.map(toEntryBase))
 }
 
@@ -46,30 +46,26 @@ export const createEntry = async (
   if (timeSpentMinutes !== null && (typeof timeSpentMinutes !== 'number' || timeSpentMinutes < 0))
     return res.status(400).json({ error: 'timeSpentMinutes must be a non negative number or null' })
 
-  const habyt = await Habyt.findByPk(habytId)
-  if (!habyt) return res.status(404).json({ error: 'Habyt not found' })
+  const habyt = await findHabytById(habytId)
+  if ('error' in habyt) return res.status(404).json({ error: habyt.error })
 
-  const user = await User.findByPk(req.decodedToken?.id as string | undefined)
-  if (!user) return res.status(404).json({ error: 'User not found' })
+  const user = await findUserById(req.decodedToken?.id as string | undefined)
+  if ('error' in user) 
+    return res.status(user.error === 'Missing id' ? 400 : 404).json({ error: user.error })
   if (user.id !== habyt.userId) 
     return res.status(403).json({ error: 'Forbidden: only the habyt owner can add new entries' })
 
   const date = toDateOnlyUTC(new Date())
 
-  try {
-    const newEntry = await Entry.create({
-      date,
-      completed,
-      timeSpentMinutes,
-      habytId
-    })
-    return res.status(201).json(toEntryBase(newEntry))
-  } catch (error: unknown) {
-    if ((error as { name: string }).name === "SequelizeUniqueConstraintError") {
-      return res.status(409).json({ error: "Entry for this date already exists" })
-    }
-    throw error
-  }
+  const newEntry = await entryService.createEntry({
+    date,
+    completed,
+    timeSpentMinutes,
+    habytId
+  })
+  
+  if ('error' in newEntry) return res.status(409).json({ error: newEntry.error })
+  return res.status(201).json(toEntryBase(newEntry))
 }
 
 export const updateEntry = async (
@@ -86,19 +82,15 @@ export const updateEntry = async (
   if (timeSpentMinutes !== null && (typeof timeSpentMinutes !== 'number' || timeSpentMinutes < 0))
     return res.status(400).json({ error: 'timeSpentMinutes must be a non negative number or null' })
 
-  const user = await User.findByPk(req.decodedToken?.id as string | undefined)
-  if (!user) return res.status(404).json({ error: 'User not found' })
+  const user = await findUserById(req.decodedToken?.id as string | undefined)
+  if ('error' in user) 
+    return res.status(user.error === 'Missing id' ? 400 : 404).json({ error: user.error })
 
-  const entry = await Entry.findByPk(id)
-    if (!entry) return res.status(404).json({ error: 'Entry not found' })
+  const result = await entryService.updateEntry(id, completed, timeSpentMinutes)
+  if ('error' in result)
+    return res.status(404).json({ error: result.error })
 
-  const updates: EntryUpdateBody = { completed }
-  if (timeSpentMinutes !== null && timeSpentMinutes !== undefined)
-    updates.timeSpentMinutes = timeSpentMinutes
-
-  const updatedEntry = await entry.update(updates)
-
-  return res.json(toEntryBase(updatedEntry))
+  return res.json(toEntryBase(result))
 }
 
 export const deleteEntry = async (
@@ -109,9 +101,8 @@ export const deleteEntry = async (
   if (!id || typeof id !== 'string' || id.trim() === '') 
     return res.status(400).json({ error: 'Entry id param must be defined' })
   
-  const entry = await Entry.findByPk(id)
-  if (!entry) return res.status(404).json({ error: 'Entry not found' })
-
-  await entry.destroy()
+  const result = await entryService.deleteEntry(id)
+  if ('error' in result) 
+    return res.status(404).json({ error: result.error })
   return res.status(204).end()
 }

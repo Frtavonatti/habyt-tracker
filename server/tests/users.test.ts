@@ -89,7 +89,7 @@ describe('POST /api/users', () => {
       email: 'unique@example.com'
     }).expect(400)
     const body = response.body as ErrorBody
-    assert.strictEqual(body.error, 'Username must be unique')
+    assert.strictEqual(body.error, 'username must be unique')
   })
 
   test('fails with duplicate email', async () => {
@@ -100,7 +100,7 @@ describe('POST /api/users', () => {
       password: 'password789'
     }).expect(400)
     const body = response.body as ErrorBody
-    assert.strictEqual(body.error, 'Email must be unique')
+    assert.strictEqual(body.error, 'email must be unique')
   })
 })
 
@@ -133,7 +133,7 @@ describe('PUT /api/users/:username', () => {
       .send({ newUsername: anotherUser.username })
       .expect(400)
     const body = response.body as ErrorBody
-    assert.strictEqual(body.error, 'Username must be unique')
+    assert.strictEqual(body.error, 'username must be unique')
   })
 
   test('fails to update non-existent user', async () => {

@@ -1,24 +1,20 @@
 import type { Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 
-import { User } from '../models/index.js'
+import * as userService from '../services/user.service.js'
 import type { UserCreateBody, UsernameUpdateBody } from '../types/index.js'
 
 export const getAllUsers = async (req: Request, res: Response) => {
-  const users = await User.findAll()
+  const users = await userService.findAll()
   return res.json(users)
 }
 
 export const getUserById = async (req: Request, res: Response) => {
-  const { id } = req.params
-  if (!id)
-    return res.status(400).json({ error: 'User ID is required' })
-
-  const user = await User.findByPk(id,  { rejectOnEmpty: false })
-  if (!user)
-    return res.status(404).json({ error: 'User not found' })
+  const result = await userService.findUserById(req.params.id)
+  if ('error' in result)
+    return res.status(result.error === 'Missing id' ? 400 : 404).json({ error : result.error })
   
-  return res.json(user)
+  return res.json(result)
 }
 
 export const createNewUser = async (
@@ -36,24 +32,15 @@ export const createNewUser = async (
   if (!password || typeof password !== 'string' || password.length < 6)
     return res.status(400).json({ error: 'Password must be at least 6 chars' })
 
-  const existing = await User.findOne({ where: { username } })
-  if (existing) {
-    return res.status(400).json({ error: 'Username must be unique' })
-  }
-
-  const existingEmail = await User.findOne({ where: { email } })
-  if (existingEmail) {
-    return res.status(400).json({ error: 'Email must be unique' })
-  }
+  const uniqueCheck = await userService.validateUniqueUserFields({ username, email })
+  if (uniqueCheck !== true)
+    return res.status(400).json({ error: uniqueCheck.error })
 
   const passwordHash = await bcrypt.hash(password, 10)
 
-  const newUser = await User.create({
-    username: username.trim(),
-    name: name.trim(),
-    email: email.toLowerCase().trim(),
-    passwordHash
-  })
+  const newUser = await userService.createUser({ username, name, email, passwordHash })
+  if ('error' in newUser)
+    return res.status(500).json({ error: newUser.error })
 
   return res.status(201).json({
     id: newUser.id,
@@ -74,9 +61,9 @@ export const changeUsername = async (
   if (!newUsername || typeof newUsername !== 'string' || newUsername.trim() === '')
     return res.status(400).json({ error: 'New username is required' })
 
-  const existing = await User.findOne({ where: { username: newUsername } })
-  if (existing && existing.id !== req.user!.id)
-    return res.status(400).json({ error: 'Username must be unique' })
+  const uniqueCheck = await userService.validateUniqueUserFields({ username: newUsername })
+  if (uniqueCheck !== true)
+    return res.status(400).json({ error: uniqueCheck.error })
   
   req.user!.username = newUsername.trim()
   const updatedUser = await req.user!.save()
