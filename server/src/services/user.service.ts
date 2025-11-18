@@ -14,19 +14,6 @@ export const findUserById = async (
   return user
 }
 
-/* This can be also consider a validator */
-export const validateUniqueUserFields = async (
-  params: Partial<{username: string, email: string}>
-): Promise<true | { error: string }> => {
-  for (const [key, value] of Object.entries(params) ) {
-    if (!value) continue
-    const isMatching = await User.findOne({ where: { [key]: value } })
-    if (isMatching)
-      return { error: `${key} must be unique` }
-  }
-  return true
-}
-
 export const createUser = async (
   { username, name, email, passwordHash }: UserCreateData
 ): Promise<CreateUserResult> => {

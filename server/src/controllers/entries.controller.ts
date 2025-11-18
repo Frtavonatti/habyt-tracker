@@ -10,6 +10,8 @@ import * as entryService from '../services/entry.service.js'
 import { findUserById } from '../services/user.service.js'
 import { findHabytById } from '../services/habyt.service.js'
 
+import { validateHabytId, validateEntryId, validateTimeSpent } from '../validators/entry.validator.js'
+import { AppError, ForbiddenError, NotFoundError } from '../utils/errors.js'
 import { toDateOnlyUTC } from '../utils/toDateOnly.js'
 import { toEntryBase } from '../types/entry.types.js'
 
@@ -18,15 +20,13 @@ export const listEntries = async (
   res: Response<EntryBase[] | { error: string }>
 ) => {
   const { habytId }: { habytId: string } = req.params
-  if (!habytId || typeof habytId != 'string' || habytId.trim() === '' )
-    return res.status(400).json({ error: 'habytId param is required' })
+  validateHabytId(habytId)
 
   const user = await findUserById(req.decodedToken?.id as string | undefined)
-  if ('error' in user) 
-    return res.status(user.error === 'Missing id' ? 400 : 404).json({ error: user.error })
+  if ('error' in user) throw new AppError(user.error, user.error === 'Missing id' ? 400 : 404)
 
   const habyt = await findHabytById(habytId)
-  if ('error' in habyt) return res.status(404).json({ error: habyt.error })
+  if ('error' in habyt) throw new NotFoundError(habyt.error)
 
   const entries = await entryService.findAll(habytId)
   return res.json(entries.map(toEntryBase))
@@ -37,23 +37,21 @@ export const createEntry = async (
   res: Response<EntryResponse>
 ) => {
   const { habytId }: { habytId: string } = req.params
-  if (!habytId || typeof habytId != 'string' || habytId.trim() === '' )
-    return res.status(400).json({ error: 'habytId param is required' })
+  validateHabytId(habytId)
 
   let { completed, timeSpentMinutes } = req.body
   completed ??= false
   timeSpentMinutes ??= null
-  if (timeSpentMinutes !== null && (typeof timeSpentMinutes !== 'number' || timeSpentMinutes < 0))
-    return res.status(400).json({ error: 'timeSpentMinutes must be a non negative number or null' })
+  validateTimeSpent(timeSpentMinutes)
 
   const habyt = await findHabytById(habytId)
-  if ('error' in habyt) return res.status(404).json({ error: habyt.error })
+  if ('error' in habyt) throw new NotFoundError(habyt.error)
 
   const user = await findUserById(req.decodedToken?.id as string | undefined)
   if ('error' in user) 
-    return res.status(user.error === 'Missing id' ? 400 : 404).json({ error: user.error })
+    throw new AppError(user.error, user.error === 'Missing id' ? 400 : 404)
   if (user.id !== habyt.userId) 
-    return res.status(403).json({ error: 'Forbidden: only the habyt owner can add new entries' })
+    throw new ForbiddenError('Forbidden: only the habyt owner can add new entries')
 
   const date = toDateOnlyUTC(new Date())
 
@@ -64,7 +62,7 @@ export const createEntry = async (
     habytId
   })
   
-  if ('error' in newEntry) return res.status(409).json({ error: newEntry.error })
+  if ('error' in newEntry) throw new AppError(newEntry.error, 409)
   return res.status(201).json(toEntryBase(newEntry))
 }
 
@@ -73,22 +71,18 @@ export const updateEntry = async (
   res: Response<EntryResponse>
 ) => {
   const { id }: { id: string } = req.params
-  if (!id || typeof id !== 'string' || id.trim() === '')
-    return res.status(400).json({ error: 'Entry id param must be defined' })
+  validateEntryId(id)
 
   let { completed, timeSpentMinutes } = req.body
   completed ??= false
   timeSpentMinutes ??= null
-  if (timeSpentMinutes !== null && (typeof timeSpentMinutes !== 'number' || timeSpentMinutes < 0))
-    return res.status(400).json({ error: 'timeSpentMinutes must be a non negative number or null' })
+  validateTimeSpent(timeSpentMinutes)
 
   const user = await findUserById(req.decodedToken?.id as string | undefined)
-  if ('error' in user) 
-    return res.status(user.error === 'Missing id' ? 400 : 404).json({ error: user.error })
+  if ('error' in user) throw new AppError(user.error, user.error === 'Missing id' ? 400 : 404)
 
   const result = await entryService.updateEntry(id, completed, timeSpentMinutes)
-  if ('error' in result)
-    return res.status(404).json({ error: result.error })
+  if ('error' in result) throw new NotFoundError(result.error)
 
   return res.json(toEntryBase(result))
 }
@@ -98,11 +92,8 @@ export const deleteEntry = async (
   res: Response<void | { error: string }>
 ) => {
   const { id }: { id: string } = req.params
-  if (!id || typeof id !== 'string' || id.trim() === '') 
-    return res.status(400).json({ error: 'Entry id param must be defined' })
-  
+  validateEntryId(id)
   const result = await entryService.deleteEntry(id)
-  if ('error' in result) 
-    return res.status(404).json({ error: result.error })
+  if ('error' in result) throw new NotFoundError(result.error)
   return res.status(204).end()
 }
