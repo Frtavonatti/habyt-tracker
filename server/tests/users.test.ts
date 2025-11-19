@@ -20,15 +20,29 @@ const initialUser = {
   password: 'password123'
 }
 
+const nonexistentId = 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa'
+
+const loginAndGetToken = async () => {
+  const loginResponse = await api.post('/api/login').send({
+    username: initialUser.username,
+    password: initialUser.password
+  }).expect(200)
+  return (loginResponse.body as LoginResponse).token
+}
+
+let user: User; let token: string
+
 beforeEach(async () => {
   await User.destroy({ where: {} })
   const passwordHash = await bcrypt.hash(initialUser.password, 10)
-  await User.create({
+  user = await User.create({
     username: initialUser.username,
     name: initialUser.name,
     email: initialUser.email,
     passwordHash
   })
+
+  token = await loginAndGetToken()
 })
 
 describe('GET /api/users', () => {
@@ -41,15 +55,13 @@ describe('GET /api/users', () => {
   })
 
   test('GET /api/users/:id returns a user by id', async () => {
-    const user = await User.findOne({ where: { username: initialUser.username } })
     const response = await api.get(`/api/users/${user!.id}`).expect(200)
     const body = response.body as UserResponse
     assert.strictEqual(body.username, initialUser.username)
   })
 
   test('GET /api/users/:id (UUID inexistente) retorna 404', async () => {
-    const nonexistent = 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa'
-    const response = await api.get(`/api/users/${nonexistent}`).expect(404)
+    const response = await api.get(`/api/users/${nonexistentId}`).expect(404)
     const body = response.body as ErrorBody
     assert.strictEqual(body.error, 'User not found')
   })
@@ -77,7 +89,7 @@ describe('POST /api/users', () => {
       email: 'unique@example.com'
     }).expect(400)
     const body = response.body as ErrorBody
-    assert.strictEqual(body.error, 'Username must be unique')
+    assert.strictEqual(body.error, 'username must be unique')
   })
 
   test('fails with duplicate email', async () => {
@@ -88,21 +100,11 @@ describe('POST /api/users', () => {
       password: 'password789'
     }).expect(400)
     const body = response.body as ErrorBody
-    assert.strictEqual(body.error, 'Email must be unique')
+    assert.strictEqual(body.error, 'email must be unique')
   })
 })
 
 describe('PUT /api/users/:username', () => {
-  let token: string
-
-  beforeEach(async () => {
-    const loginResponse = await api.post('/api/login').send({
-      username: initialUser.username,
-      password: initialUser.password
-    }).expect(200)
-    token = (loginResponse.body as LoginResponse).token
-  })
-
   test('updates user username', async () => {
     const newUsername = 'updateduser'
     const response = await api.put(`/api/users/${initialUser.username}`)
@@ -131,7 +133,7 @@ describe('PUT /api/users/:username', () => {
       .send({ newUsername: anotherUser.username })
       .expect(400)
     const body = response.body as ErrorBody
-    assert.strictEqual(body.error, 'Username must be unique')
+    assert.strictEqual(body.error, 'username must be unique')
   })
 
   test('fails to update non-existent user', async () => {
@@ -145,18 +147,7 @@ describe('PUT /api/users/:username', () => {
 })
 
 describe('DELETE /api/users/:id', () => {
-  let token: string
-
-  beforeEach(async () => {
-    const loginResponse = await api.post('/api/login').send({
-      username: initialUser.username,
-      password: initialUser.password
-    }).expect(200)
-    token = (loginResponse.body as LoginResponse).token
-  })
-
   test('deletes a user by id', async () => {
-    const user = await User.findOne({ where: { username: initialUser.username } })
     await api
     .delete(`/api/users/${user!.id}`)
     .set('Authorization', `Bearer ${token}`)
@@ -175,10 +166,8 @@ describe('DELETE /api/users/:id', () => {
   })
 
   test('fails to delete non-existent user', async () => {
-    const nonexistent = 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa'
-
     const response = await api
-    .delete(`/api/users/${nonexistent}`)
+    .delete(`/api/users/${nonexistentId}`)
     .set('Authorization', `Bearer ${token}`)
     .expect(404)
     const body = response.body as ErrorBody

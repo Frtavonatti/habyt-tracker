@@ -3,28 +3,19 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 
 import { User } from '../models/index.js'
+import { validateUsername, validatePassword } from '../validators/user.validator.js'
+import { AppError } from '../utils/errors.js'
 import { JWT_SECRET } from '../config/index.js'
 
-interface LoginBody {
-  username: string
-  password: string
-}
-
-interface AuthTokenPayload {
-  id: string
-  username: string
-}
+import type { LoginBody, AuthTokenPayload } from '../types/index.js'
 
 export const login = async (
   req: Request<unknown, unknown, LoginBody>, 
   res: Response
 ) => {
   const { username, password } = req.body
-  
-  if (!username || typeof username != 'string' || username.trim() === '')
-    return res.status(400).json({ error: 'Username is required' })
-  if (!password || typeof password != 'string' || password.trim() === '')
-    return res.status(400).json({ error: 'Password is required' })
+  validateUsername(username)
+  validatePassword(password)
 
   const user = await User.scope('withPassword').findOne({ where: { username } })
 
@@ -32,8 +23,7 @@ export const login = async (
     ? await bcrypt.compare(password, user.passwordHash)
     : false
 
-  if (!passwordCorrect || !user)
-    return res.status(401).json({ error: 'Invalid username or password' })
+  if (!passwordCorrect || !user) throw new AppError('Invalid username or password', 401)
 
   const payload: AuthTokenPayload = {
     id: String(user.id),

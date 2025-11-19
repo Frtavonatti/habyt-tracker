@@ -1,7 +1,15 @@
-export interface CreateHabytBody {
+import type Habyt from "../models/habyt.js"
+
+export interface HabytCreateBody {
   title: string
   description?: string | null
   token?: string
+  decodedToken?: { id: string, username: string } | null
+}
+
+export interface HabytUpdateBody {
+  title: string
+  description: string | null
   decodedToken?: { id: string, username: string } | null
 }
 
@@ -12,4 +20,19 @@ export interface HabytResponse {
   userId: string
   createdAt: string
   updatedAt: string
+}
+
+// Services
+export interface HabytCreateData {
+  title: string,
+  description: string | null,
+  userId: string 
+}
+
+export interface HabytUpdateData extends HabytCreateData {
+  id: string,
+}
+
+export interface HabytUpdateResult { 
+  habyt: Habyt 
 }

@@ -5,8 +5,7 @@ import assert from "node:assert"
 
 import app from "../src/index.js"
 import { User, Habyt } from "../src/models/index.js"
-import type { HabytResponse } from "../src/types/habyt.types.js"
-import type { LoginResponse } from "../src/types/user.types.js"
+import type { HabytResponse, LoginResponse } from "../src/types/index.js"
 
 const api = supertest(app)
 
@@ -23,12 +22,24 @@ const habytList = [
   { title: "Meditation", description: "Meditate for 10 minutes" },
 ]
 
+const nonExistentId = "99999999-9999-9999-9999-999999999999"
+
+const loginAndGetToken = async () => {
+  const loginResponse = await api.post('/api/login').send({
+    username: initialUser.username,
+    password: initialUser.password
+  }).expect(200)
+  return (loginResponse.body as LoginResponse).token
+}
+
+let user: User; let habyt: Habyt | null; let token: string
+
 beforeEach(async () => {
   await User.destroy({ where: {} })
   await Habyt.destroy({ where: {} })
 
   const passwordHash = await bcrypt.hash(initialUser.password, 10)
-  const user = await User.create({
+  user = await User.create({
     username: initialUser.username,
     name: initialUser.name,
     email: initialUser.email,
@@ -38,6 +49,11 @@ beforeEach(async () => {
   for (const habyt of habytList) {
     await Habyt.create({ ...habyt, userId: user.id })
   }
+
+  habyt = await Habyt.findOne({ where: { title: habytList[0]!.title } })
+  if (!habyt) throw new Error('Error creating habyt while setting test')
+
+  token = await loginAndGetToken()
 })
 
 describe("GET /api/habyts", () => {
@@ -49,7 +65,6 @@ describe("GET /api/habyts", () => {
   })
 
   test("/:id returns a habyt by id", async () => {
-    const habyt = await Habyt.findOne({ where: { title: habytList[0]!.title } })
     const response = await api.get(`/api/habyts/${habyt!.id}`).expect(200)
     const body = response.body as HabytResponse
     assert.strictEqual(body.title, habytList[0]!.title)
@@ -58,13 +73,6 @@ describe("GET /api/habyts", () => {
 
 describe("POST /api/habyts", () => {
   test("creates a new habyt with valid data and token", async () => {
-    const loginResponse = await api.post("/api/login").send({
-      username: initialUser.username,
-      password: initialUser.password,
-    }).expect(200)
-
-    const { token } = loginResponse.body as LoginResponse
-
     const newHabyt = { title: "Yoga", description: "Practice yoga daily"}
     const response = await api.post("/api/habyts")
       .set("Authorization", `Bearer ${token}`)
@@ -82,12 +90,6 @@ describe("POST /api/habyts", () => {
   })
 
   test("fails with 400 if title is missing", async () => {
-    const loginResponse = await api.post("/api/login").send({
-      username: initialUser.username,
-      password: initialUser.password,
-    }).expect(200)
-
-    const { token } = loginResponse.body as LoginResponse
     const newHabyt = { description: "No title provided" }
     await api.post("/api/habyts")
       .set("Authorization", `Bearer ${token}`)
@@ -103,47 +105,61 @@ describe("POST /api/habyts", () => {
   })
 })
 
+describe("PUT /api/habyts/:id", () => {
+  test("updates a habyt with valid data and token", async () => {
+    assert(habyt, "Habyt to update should exist")
+    const updatedData = { title: "Updated Title", description: "Updated Description" }
+    const response = await api.put(`/api/habyts/${habyt.id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(updatedData)
+      .expect(200)
+
+    const updatedHabyt = response.body as HabytResponse
+    assert.strictEqual(updatedHabyt.title, updatedData.title)
+    assert.strictEqual(updatedHabyt.description, updatedData.description)
+  })
+
+  test("fails with 404 if habyt does not exist", async () => {
+    const updatedData = { title: "Non-existent", description: "This habyt does not exist" }
+    await api.put(`/api/habyts/${nonExistentId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(updatedData)
+      .expect(404)
+  })
+
+  test("fails with 401 if token is missing", async () => {
+    assert(habyt, "Habyt to update should exist")
+    const updatedData = { title: "No Auth", description: "Missing token" }
+    await api.put(`/api/habyts/${habyt.id}`)
+      .send(updatedData)
+      .expect(401)
+  })
+})
+
 describe("DELETE /api/habyts/:id", () => {
   test("deletes a habyt with valid id and token", async () => {
-    const loginResponse = await api.post("/api/login").send({
-      username: initialUser.username,
-      password: initialUser.password,
-    }).expect(200)
-
-    const { token } = loginResponse.body as LoginResponse
-    const habytToDelete = await Habyt.findOne({ where: { title: habytList[1]!.title } })
-    assert(habytToDelete, "Habyt to delete should exist")
+    assert(habyt, "Habyt to delete should exist")
     const habytsAtStart = await Habyt.findAll()
 
-    await api.delete(`/api/habyts/${habytToDelete.id}`)
+    await api.delete(`/api/habyts/${habyt.id}`)
       .set("Authorization", `Bearer ${token}`)
       .expect(204)
 
-    const habytAfterDelete = await Habyt.findByPk(habytToDelete.id)
+    const habytAfterDelete = await Habyt.findByPk(habyt.id)
     assert.strictEqual(habytAfterDelete, null)
-
     const habytsAtEnd = await Habyt.findAll()
     assert.strictEqual(habytsAtEnd.length, habytsAtStart.length - 1)
   })
 
   test("fails with 404 if habyt does not exist", async () => {
-    const loginResponse = await api.post("/api/login").send({
-      username: initialUser.username,
-      password: initialUser.password,
-    }).expect(200)
-
-    const { token } = loginResponse.body as LoginResponse
-    const nonExistentId = "99999999-9999-9999-9999-999999999999"
     await api.delete(`/api/habyts/${nonExistentId}`)
       .set("Authorization", `Bearer ${token}`)
       .expect(404)
   })
 
   test("fails with 401 if token is missing", async () => {
-    const habytToDelete = await Habyt.findOne({ where: { title: habytList[0]!.title } })
-    assert(habytToDelete, "Habyt to delete should exist")
-
-    await api.delete(`/api/habyts/${habytToDelete.id}`)
+    assert(habyt, "Habyt to delete should exist")
+    await api.delete(`/api/habyts/${habyt.id}`)
       .expect(401)
   })
 })

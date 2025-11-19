@@ -1,59 +1,32 @@
 import type { Request, Response } from 'express'
-import bcrypt from 'bcrypt'
+import type { UserCreateBody, UsernameUpdateBody } from '../types/index.js'
 
-import { User } from '../models/index.js'
-import type { CreateUserBody, UpdateUsernameBody } from '../types/index.js'
+import bcrypt from 'bcrypt'
+import * as userService from '../services/user.service.js'
+import { validateCreateUserBody, validateNewUserName, validateUniqueUserFields } from '../validators/user.validator.js'
+import { ForbiddenError } from '../utils/errors.js'
 
 export const getAllUsers = async (req: Request, res: Response) => {
-  const users = await User.findAll()
+  const users = await userService.findAll()
   return res.json(users)
 }
 
 export const getUserById = async (req: Request, res: Response) => {
-  const { id } = req.params
-  if (!id)
-    return res.status(400).json({ error: 'User ID is required' })
-
-  const user = await User.findByPk(id,  { rejectOnEmpty: false })
-  if (!user)
-    return res.status(404).json({ error: 'User not found' })
-  
-  return res.json(user)
+  const result = await userService.findUserById(req.params.id)
+  return res.json(result)
 }
 
 export const createNewUser = async (
-  req: Request<unknown, unknown, CreateUserBody>, 
+  req: Request<unknown, unknown, UserCreateBody>, 
   res: Response
 ) => {
   const { username, name, email, password } = req.body
-
-  if (!username || typeof username !== 'string' || username.trim() === '')
-    return res.status(400).json({ error: 'Username is required' })
-  if (!name || typeof name !== 'string' || name.trim() === '')
-    return res.status(400).json({ error: 'Name is required' })
-  if (!email || typeof email !== 'string' || email.trim() === '')
-    return res.status(400).json({ error: 'Email is required' })
-  if (!password || typeof password !== 'string' || password.length < 6)
-    return res.status(400).json({ error: 'Password must be at least 6 chars' })
-
-  const existing = await User.findOne({ where: { username } })
-  if (existing) {
-    return res.status(400).json({ error: 'Username must be unique' })
-  }
-
-  const existingEmail = await User.findOne({ where: { email } })
-  if (existingEmail) {
-    return res.status(400).json({ error: 'Email must be unique' })
-  }
+  validateCreateUserBody(username, name, email, password)
+  await validateUniqueUserFields({ username, email })
 
   const passwordHash = await bcrypt.hash(password, 10)
 
-  const newUser = await User.create({
-    username: username.trim(),
-    name: name.trim(),
-    email: email.toLowerCase().trim(),
-    passwordHash
-  })
+  const newUser = await userService.createUser({ username, name, email, passwordHash })
 
   return res.status(201).json({
     id: newUser.id,
@@ -64,19 +37,14 @@ export const createNewUser = async (
 }
 
 export const changeUsername = async (
-  req: Request<unknown, unknown, UpdateUsernameBody>,
+  req: Request<unknown, unknown, UsernameUpdateBody>,
   res: Response
 ) => {
-  if (req.decodedToken?.id !== req.user?.id)
-    return res.status(403).json({ error: 'forbidden' })
+  if (req.decodedToken?.id !== req.user?.id) throw new ForbiddenError('forbidden')
 
   const { newUsername } = req.body
-  if (!newUsername || typeof newUsername !== 'string' || newUsername.trim() === '')
-    return res.status(400).json({ error: 'New username is required' })
-
-  const existing = await User.findOne({ where: { username: newUsername } })
-  if (existing && existing.id !== req.user!.id)
-    return res.status(400).json({ error: 'Username must be unique' })
+  validateNewUserName(newUsername)
+  await validateUniqueUserFields({ username: newUsername })
   
   req.user!.username = newUsername.trim()
   const updatedUser = await req.user!.save()
@@ -84,17 +52,13 @@ export const changeUsername = async (
 }
 
 export const deleteUserById = async (req: Request, res: Response) => {
-  if (req.user?.id !== req.decodedToken?.id)
-    return res.status(403).json({ error: 'forbidden' })
-
+  if (req.user?.id !== req.decodedToken?.id) throw new ForbiddenError('forbidden')
   await req.user!.destroy()
   return res.status(204).end()
 }
 
 export const deleteUserByUsername = async (req: Request, res: Response) => {
-  if (req.user?.id !== req.decodedToken?.id)
-    return res.status(403).json({ error: 'forbidden' })
-
+  if (req.user?.id !== req.decodedToken?.id) throw new ForbiddenError('forbidden')
   await req.user!.destroy()
   return res.status(204).end()
 }
