@@ -4,7 +4,6 @@ import type { HabytCreateBody, HabytUpdateBody } from '../types/index.js'
 import * as habytService from '../services/habyt.service.js'
 import { findUserById } from '../services/user.service.js'
 import { validateHabytTitle, validateHabytDescription } from '../validators/habyt.validator.js'
-import { AppError, ForbiddenError, NotFoundError } from '../utils/errors.js'
 
 export const getAllHabyts = async (req: Request, res: Response) => {
   const habyts = await habytService.findAllHabyts()
@@ -13,7 +12,6 @@ export const getAllHabyts = async (req: Request, res: Response) => {
 
 export const getHabyt = async (req: Request<{ id: string }>, res: Response) => {
   const habyt = await habytService.findHabytById(req.params.id)
-  if ('error' in habyt) throw new AppError(habyt.error, 404)
   return res.json(habyt)
 }
 
@@ -29,8 +27,6 @@ export const createNewHabyt = async (
   validateHabytDescription(req.body.description)
 
   const user = await findUserById(req.decodedToken?.id as string | undefined)
-  if ('error' in user) 
-    throw new AppError(user.error, user.error === 'Missing id' ? 400 : 404)
 
   const normalizedDescription =
   typeof description === 'string'
@@ -55,8 +51,6 @@ export const updateHabyt = async (
   validateHabytDescription(req.body.description)
 
   const user = await findUserById(req.decodedToken?.id as string | undefined)
-  if ('error' in user)
-    throw new AppError(user.error, user.error === 'Missing id' ? 400 : 404)
 
   const result = await habytService.updateHabyt({ 
     id: req.params.id,
@@ -64,41 +58,17 @@ export const updateHabyt = async (
     description,
     userId: user.id
    })
-  
-  if ('error' in result) {
-    switch (result.error) {
-      case 'Habyt not found':
-        throw new NotFoundError(result.error)
-      case 'Forbidden':
-        throw new ForbiddenError('Forbidden: You can only delete your own habyts')
-      default:
-        throw new AppError(result.error, 400)
-    }
-  }
 
   return res.json(result.habyt)
 }
 
 export const deleteHabyt = async (req: Request<{ id: string }>, res: Response) => {
   const user = await findUserById(req.decodedToken?.id as string | undefined)
-  if ('error' in user)
-    throw new AppError(user.error, user.error === 'Missing id' ? 400 : 404)
 
-  const result = await habytService.deleteHabyt({
+  await habytService.deleteHabyt({
     id: req.params.id,
     userId: user.id
   })
-
-  if ('error' in result) {
-    switch (result.error) {
-      case 'Habyt not found':
-        throw new NotFoundError(result.error)
-      case 'Forbidden':
-        throw new ForbiddenError('Forbidden: You can only delete your own habyts')
-      default:
-        throw new AppError(result.error, 400)
-    }
-  }
 
   return res.status(204).end()
 }

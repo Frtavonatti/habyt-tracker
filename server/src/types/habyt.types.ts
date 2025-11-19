@@ -33,4 +33,6 @@ export interface HabytUpdateData extends HabytCreateData {
   id: string,
 }
 
-export type HabytUpdateResult = { habyt: Habyt } | { error: string } 
+export interface HabytUpdateResult { 
+  habyt: Habyt 
+}

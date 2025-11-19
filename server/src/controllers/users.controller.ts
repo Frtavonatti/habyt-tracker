@@ -1,10 +1,10 @@
 import type { Request, Response } from 'express'
-import bcrypt from 'bcrypt'
+import type { UserCreateBody, UsernameUpdateBody } from '../types/index.js'
 
+import bcrypt from 'bcrypt'
 import * as userService from '../services/user.service.js'
 import { validateCreateUserBody, validateNewUserName, validateUniqueUserFields } from '../validators/user.validator.js'
-import { AppError, ForbiddenError } from '../utils/errors.js'
-import type { UserCreateBody, UsernameUpdateBody } from '../types/index.js'
+import { ForbiddenError } from '../utils/errors.js'
 
 export const getAllUsers = async (req: Request, res: Response) => {
   const users = await userService.findAll()
@@ -13,8 +13,6 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
 export const getUserById = async (req: Request, res: Response) => {
   const result = await userService.findUserById(req.params.id)
-  if ('error' in result) 
-    throw new AppError(result.error, result.error === 'Missing id' ? 400 : 404)
   return res.json(result)
 }
 
@@ -29,7 +27,6 @@ export const createNewUser = async (
   const passwordHash = await bcrypt.hash(password, 10)
 
   const newUser = await userService.createUser({ username, name, email, passwordHash })
-  if ('error' in newUser) throw new AppError(newUser.error, 500)
 
   return res.status(201).json({
     id: newUser.id,

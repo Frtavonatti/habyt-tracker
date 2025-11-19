@@ -1,5 +1,3 @@
-import type User from "../models/user.js"
-
 export interface UserCreateBody {
   username: string
   name: string
@@ -35,7 +33,3 @@ export interface LoginResponse {
   username: string
   name: string
 }
-
-// Services
-export type FindUserResult = User | { error: string }
-export type CreateUserResult = UserResponse | { error: string }

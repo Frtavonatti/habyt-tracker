@@ -11,7 +11,7 @@ import { findUserById } from '../services/user.service.js'
 import { findHabytById } from '../services/habyt.service.js'
 
 import { validateHabytId, validateEntryId, validateTimeSpent } from '../validators/entry.validator.js'
-import { AppError, ForbiddenError, NotFoundError } from '../utils/errors.js'
+import { ForbiddenError } from '../utils/errors.js'
 import { toDateOnlyUTC } from '../utils/toDateOnly.js'
 import { toEntryBase } from '../types/entry.types.js'
 
@@ -22,11 +22,11 @@ export const listEntries = async (
   const { habytId }: { habytId: string } = req.params
   validateHabytId(habytId)
 
-  const user = await findUserById(req.decodedToken?.id as string | undefined)
-  if ('error' in user) throw new AppError(user.error, user.error === 'Missing id' ? 400 : 404)
-
   const habyt = await findHabytById(habytId)
-  if ('error' in habyt) throw new NotFoundError(habyt.error)
+
+  const user = await findUserById(req.decodedToken?.id as string | undefined)
+    if (user.id !== habyt.userId) 
+      throw new ForbiddenError('Forbidden: only the habyt owner can see the entries')
 
   const entries = await entryService.findAll(habytId)
   return res.json(entries.map(toEntryBase))
@@ -45,11 +45,8 @@ export const createEntry = async (
   validateTimeSpent(timeSpentMinutes)
 
   const habyt = await findHabytById(habytId)
-  if ('error' in habyt) throw new NotFoundError(habyt.error)
 
   const user = await findUserById(req.decodedToken?.id as string | undefined)
-  if ('error' in user) 
-    throw new AppError(user.error, user.error === 'Missing id' ? 400 : 404)
   if (user.id !== habyt.userId) 
     throw new ForbiddenError('Forbidden: only the habyt owner can add new entries')
 
@@ -62,7 +59,6 @@ export const createEntry = async (
     habytId
   })
   
-  if ('error' in newEntry) throw new AppError(newEntry.error, 409)
   return res.status(201).json(toEntryBase(newEntry))
 }
 
@@ -78,12 +74,13 @@ export const updateEntry = async (
   timeSpentMinutes ??= null
   validateTimeSpent(timeSpentMinutes)
 
+  const entry = await entryService.findEntryById(id)
+  const habyt = await findHabytById(entry.habytId)
   const user = await findUserById(req.decodedToken?.id as string | undefined)
-  if ('error' in user) throw new AppError(user.error, user.error === 'Missing id' ? 400 : 404)
-
+  if (user.id !== habyt.userId)
+    throw new ForbiddenError('Forbidden: only the habyt owner can update entries')
+  
   const result = await entryService.updateEntry(id, completed, timeSpentMinutes)
-  if ('error' in result) throw new NotFoundError(result.error)
-
   return res.json(toEntryBase(result))
 }
 
@@ -93,7 +90,6 @@ export const deleteEntry = async (
 ) => {
   const { id }: { id: string } = req.params
   validateEntryId(id)
-  const result = await entryService.deleteEntry(id)
-  if ('error' in result) throw new NotFoundError(result.error)
+  await entryService.deleteEntry(id)
   return res.status(204).end()
 }
