@@ -7,7 +7,7 @@ import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
 import { Link } from 'expo-router'
 
-import partialReactLogo from '../../assets/images/partial-react-logo.png'
+import partialReactLogo from '@/assets/images/partial-react-logo.png'
 
 export default function HomeScreen() {
   return (
