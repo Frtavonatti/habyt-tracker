@@ -1,4 +1,11 @@
-import type Habyt from "../models/habyt.js"
+export interface Habyt {
+  id: string
+  title: string
+  description: string | null
+  userId: string
+  createdAt: string
+  updatedAt: string
+}
 
 export interface HabytCreateBody {
   title: string
@@ -13,14 +20,7 @@ export interface HabytUpdateBody {
   decodedToken?: { id: string, username: string } | null
 }
 
-export interface HabytResponse {
-  id: string
-  title: string
-  description: string | null
-  userId: string
-  createdAt: string
-  updatedAt: string
-}
+export type HabytResponse = Habyt
 
 // Services
 export interface HabytCreateData {
@@ -34,5 +34,5 @@ export interface HabytUpdateData extends HabytCreateData {
 }
 
 export interface HabytUpdateResult { 
-  habyt: Habyt 
+  habyt: Omit<Habyt, 'createdAt' | 'updatedAt'>
 }

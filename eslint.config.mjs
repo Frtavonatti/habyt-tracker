@@ -15,7 +15,23 @@ export default [
   ...tseslint.configs.stylisticTypeChecked,
 
   {
-    files: ['server/src/**/*.ts'], // add 'shared/src/**/*.ts
+    files: ['shared/src/**/*.ts'],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        project: ['./shared/tsconfig.json'],
+        tsconfigRootDir: import.meta.dirname
+      }
+    },
+    rules: {
+      semi: ['error', 'never'],
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }]
+    }
+  },
+
+  {
+    files: ['server/src/**/*.ts'],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {

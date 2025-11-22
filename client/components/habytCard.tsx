@@ -3,11 +3,13 @@ import { StyleSheet } from "react-native"
 import { ThemedView } from "./themed-view"
 import { ThemedText } from "./themed-text"
 
-export default function Habyt ({ props }) {
+import type { Habyt } from '@shared/habyt.types'
+
+export default function HabytCard ({ title, description }: Habyt) {
   return (
     <ThemedView style={styles.habytContainer}>
-      <ThemedText type="subtitle">{props.title}</ThemedText>
-      <ThemedText>{props.description}</ThemedText>
+      <ThemedText type="subtitle">{title}</ThemedText>
+      <ThemedText>{description}</ThemedText>
     </ThemedView>
   )
 }

@@ -9,8 +9,16 @@
     "sourceMap": true,
     "incremental": true,
     "tsBuildInfoFile": "dist/.tsbuildinfo",
-    "isolatedModules": true
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "@shared/*": ["../shared/src/*"]
+    }
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["dist", "tests"]
+  "include": [ "src/**/*.ts"],
+  "exclude": ["dist", "tests"],
+  "references": [
+    { "path": "../shared" }
+  ]
 }

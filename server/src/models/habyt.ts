@@ -10,15 +10,15 @@ import { sequelize } from "../db/index.js"
 import type User from "./user.js"
 
 export class Habyt extends Model<
-  InferAttributes<Habyt>,
+  InferAttributes<Habyt, { omit: 'createdAt' | 'updatedAt' }>,
   InferCreationAttributes<Habyt>
 > {
   declare id: CreationOptional<string>
   declare title: string
   declare description: string | null
   declare userId: ForeignKey<User["id"]>
-  // declare createdAt: CreationOptional<Date>
-  // declare updatedAt: CreationOptional<Date>
+  declare createdAt: CreationOptional<Date>
+  declare updatedAt: CreationOptional<Date>
 }
 
 Habyt.init(

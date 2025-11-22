@@ -1,7 +1,7 @@
 import Habyt from "../models/habyt.js"
 import { ForbiddenError, NotFoundError } from "../utils/errors.js"
 
-import type { HabytCreateData, HabytUpdateData, HabytUpdateResult } from "../types/habyt.types.js"
+import type { HabytCreateData, HabytUpdateData, HabytUpdateResult } from "../../../shared/src/habyt.types.js"
 
 export const findAllHabyts = (): Promise<Habyt[]> => {
   return Habyt.findAll()

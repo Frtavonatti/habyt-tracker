@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { StyleSheet, FlatList, Button } from 'react-native'
 
 import ParallaxScrollView from '@/components/parallax-scroll-view'
-import Habyt from '@/components/habyt'
+import HabytCard from '@/components/habytCard'
 import { ThemedView } from '@/components/themed-view'
 import ThemedTextInput from '@/components/themed-text-input'
 
+import type { Habyt } from '../../../shared/src/habyt.types'
+
 export default function HomeScreen() {
-  const [habyts, setHabyts] = useState()
+  const [habyts, setHabyts] = useState<Habyt[]>([])
 
   useEffect(() => {
     async function fetchHabyts() {
@@ -15,7 +17,7 @@ export default function HomeScreen() {
       if (!response.ok)
         throw new Error(`Response status: ${response.status}`)
       
-      const result = await response.json()
+      const result = (await response.json()) as Habyt[]
       setHabyts(result)
     }
     void fetchHabyts()
@@ -29,12 +31,11 @@ export default function HomeScreen() {
         <Button title="<>"></Button>
       </ThemedView>
 
-      <FlatList 
+      <FlatList
         data={habyts}
-        renderItem={({item}) => <Habyt props={item} /> }
-        keyExtractor={item => item.id}
+        renderItem={({item}) => <HabytCard {...item} />}
+        keyExtractor={(item) => item.id}
       />
-
     </ParallaxScrollView>
   )
 }

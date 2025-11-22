@@ -8,7 +8,7 @@ import type {
 import { sequelize } from "../db/index.js"
 
 class User extends Model<
-  InferAttributes<User>,
+  InferAttributes<User, { omit: 'createdAt' | 'updatedAt' }>,
   InferCreationAttributes<User>
 > {
   declare id: CreationOptional<string>
@@ -16,8 +16,8 @@ class User extends Model<
   declare username: string
   declare email: string
   declare passwordHash: string
-  // declare createdAt: CreationOptional<Date>
-  // declare updatedAt: CreationOptional<Date>
+  declare createdAt: CreationOptional<Date>
+  declare updatedAt: CreationOptional<Date>
 
   // toJSON() {
   //   const values = { ...this.get() }
