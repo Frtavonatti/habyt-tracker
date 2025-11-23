@@ -25,7 +25,7 @@ export default function Login() {
     try {
       await register({ username, name, password, email})
     } catch {
-      Alert.alert('Login failed. Please try again.')
+      Alert.alert('Registration failed. Please try again.')
     }
   }
 
