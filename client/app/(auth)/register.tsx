@@ -20,6 +20,7 @@ export default function Login() {
   const handleLogin = async () => {
     if (password !== confirmPassword) {
       Alert.alert('Error', 'Passwords do not match')
+      return
     }
     try {
       await register({ username, name, password, email})
