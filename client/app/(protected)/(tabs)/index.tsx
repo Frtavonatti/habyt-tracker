@@ -1,19 +1,21 @@
 import { useEffect, useState } from 'react'
 import { StyleSheet, FlatList, Button } from 'react-native'
 
+import { config } from '@/constants/config'
 import ParallaxScrollView from '@/components/parallax-scroll-view'
 import HabytCard from '@/components/habytCard'
 import { ThemedView } from '@/components/themed-view'
 import ThemedTextInput from '@/components/themed-text-input'
 
-import type { Habyt } from '../../../shared/src/habyt.types'
+import type { Habyt } from '../../../../shared/src/habyt.types'
 
 export default function HomeScreen() {
   const [habyts, setHabyts] = useState<Habyt[]>([])
+console.log('API URL:', config.apiBaseUrl)
 
   useEffect(() => {
     async function fetchHabyts() {
-      const response = await fetch('http://192.168.1.200:3000/api/habyts')
+      const response = await fetch(`${config.apiBaseUrl}/habyts`)
       if (!response.ok)
         throw new Error(`Response status: ${response.status}`)
       
