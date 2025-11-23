@@ -11,7 +11,6 @@ import type { Habyt } from '../../../../shared/src/habyt.types'
 
 export default function HomeScreen() {
   const [habyts, setHabyts] = useState<Habyt[]>([])
-console.log('API URL:', config.apiBaseUrl)
 
   useEffect(() => {
     async function fetchHabyts() {
