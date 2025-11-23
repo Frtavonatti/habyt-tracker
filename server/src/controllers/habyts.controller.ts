@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import type { HabytCreateBody, HabytUpdateBody } from '../types/index.js'
+import type { HabytCreateBody, HabytUpdateBody } from '../../../shared/src/habyt.types.js'
 
 import * as habytService from '../services/habyt.service.js'
 import { findUserById } from '../services/user.service.js'

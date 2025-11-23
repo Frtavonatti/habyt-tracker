@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "workspaces": [
-    "server"
+    "server",
+    "client",
+    "shared"
   ],
   "scripts": {
     "dev": "npm run dev -w server",

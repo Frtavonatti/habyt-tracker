@@ -7,7 +7,7 @@ import app from "../src/index.js"
 import { User, Habyt, Entry } from "../src/models/index.js"
 import { toDateOnlyUTC } from "../src/utils/toDateOnly.js"
 
-import type { EntryBase, LoginResponse } from "../src/types/index.js"
+import type { EntryBase, LoginResponse } from "../../shared/src/index.js"
 
 const api = supertest(app)
 

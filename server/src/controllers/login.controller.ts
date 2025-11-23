@@ -7,10 +7,10 @@ import { validateUsername, validatePassword } from '../validators/user.validator
 import { AppError } from '../utils/errors.js'
 import { JWT_SECRET } from '../config/index.js'
 
-import type { LoginBody, AuthTokenPayload } from '../types/index.js'
+import type { LoginBody, AuthTokenPayload } from '../../../shared/src/index.js'
 
 export const login = async (
-  req: Request<unknown, unknown, LoginBody>, 
+  req: Request<unknown, unknown, LoginBody>,
   res: Response
 ) => {
   const { username, password } = req.body

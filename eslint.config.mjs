@@ -6,7 +6,8 @@ export default [
     ignores: [
       '**/dist/**',
       '**/.tsbuildinfo',
-      'eslint.config.mjs'
+      'eslint.config.mjs',
+      'client/scripts/**/*.js'
     ]
   },
   eslint.configs.recommended,
@@ -14,7 +15,23 @@ export default [
   ...tseslint.configs.stylisticTypeChecked,
 
   {
-    files: ['server/src/**/*.ts'], // add 'shared/src/**/*.ts' and 'client/src/**/*.ts'
+    files: ['shared/src/**/*.ts'],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        project: ['./shared/tsconfig.json'],
+        tsconfigRootDir: import.meta.dirname
+      }
+    },
+    rules: {
+      semi: ['error', 'never'],
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }]
+    }
+  },
+
+  {
+    files: ['server/src/**/*.ts'],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
@@ -43,5 +60,21 @@ export default [
     rules: {
       '@typescript-eslint/no-floating-promises': 'off' // Avoid false positives in tests.
     }
-  }
+  },
+
+  {
+    files: ['client/**/*.ts', 'client/**/*.tsx'],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        project: ['./client/tsconfig.json'],
+        tsconfigRootDir: import.meta.dirname
+      }
+    },
+    rules: {
+      semi: ['error', 'never'],
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }]
+    }
+  },
 ]
