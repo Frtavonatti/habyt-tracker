@@ -14,12 +14,16 @@ export default function HomeScreen() {
 
   useEffect(() => {
     async function fetchHabyts() {
-      const response = await fetch(`${config.apiBaseUrl}/habyts`)
-      if (!response.ok)
-        throw new Error(`Response status: ${response.status}`)
-      
-      const result = (await response.json()) as Habyt[]
-      setHabyts(result)
+      try {
+        const response = await fetch(`${config.apiBaseUrl}/habyts`)
+        if (!response.ok)
+          throw new Error(`Response status: ${response.status}`)
+        
+        const result = (await response.json()) as Habyt[]
+        setHabyts(result)
+      } catch (error) {
+        console.error('Failed to fetch habyts:', error)
+      }
     }
     void fetchHabyts()
   }, [])
