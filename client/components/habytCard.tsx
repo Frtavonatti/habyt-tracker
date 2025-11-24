@@ -5,7 +5,7 @@ import { ThemedText } from "./themed-text"
 
 import type { Habyt } from '@shared/habyt.types'
 
-export default function HabytCard ({ title, description }: Habyt) {
+export function HabytCard ({ title, description }: Habyt) {
   return (
     <ThemedView style={styles.habytContainer}>
       <ThemedText type="subtitle">{title}</ThemedText>

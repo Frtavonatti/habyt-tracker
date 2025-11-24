@@ -11,7 +11,7 @@ interface ThemedDropdownProps {
   placeholder?: string;
 }
 
-export default function ThemedDropdown({
+export function ThemedDropdown({
   options,
   value,
   onValueChange,

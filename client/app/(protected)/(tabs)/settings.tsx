@@ -1,3 +1,4 @@
+import React, { useState } from 'react'
 import { StyleSheet, Button, KeyboardAvoidingView } from 'react-native'
 import { Image } from 'expo-image' 
 
@@ -6,12 +7,11 @@ import { useTheme } from '@/contexts/ThemeContext'
 import ParallaxScrollView from '@/components/parallax-scroll-view'
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
-import ThemedTextInput from '@/components/themed-text-input'
-import ThemedDropdown from '@/components/themed-dropdown'
+import { ThemedTextInput } from '@/components/themed-text-input'
+import { ThemedDropdown } from '@/components/themed-dropdown'
 import { Fonts } from '@/constants/theme'
 import reactLogo from '@/assets/images/react-logo.png'
 
-import React, { useState } from 'react'
 
 export default function Settings () {
   const { logout } = useAuth()

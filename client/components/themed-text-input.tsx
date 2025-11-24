@@ -7,7 +7,7 @@ export type ThemedTextProps = TextInputProps & {
   darkColor?: string;
 }
 
-export default function ThemedTextInput(props: ThemedTextProps) {
+export function ThemedTextInput(props: ThemedTextProps) {
   const { lightColor, darkColor, style, ...otherProps } = props
 
   const textColor = useThemeColor({ light: lightColor, dark: darkColor }, 'text')
