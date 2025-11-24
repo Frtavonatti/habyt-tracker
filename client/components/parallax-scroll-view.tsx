@@ -1,5 +1,6 @@
 import type { PropsWithChildren, ReactElement } from 'react'
 import { StyleSheet } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Animated, {
   interpolate,
   useAnimatedRef,
@@ -25,6 +26,7 @@ export default function ParallaxScrollView({
 }: Props) {
   const backgroundColor = useThemeColor({}, 'background')
   const colorScheme = useColorScheme() ?? 'light'
+  const insets = useSafeAreaInsets()
   const scrollRef = useAnimatedRef<Animated.ScrollView>()
   const scrollOffset = useScrollOffset(scrollRef)
   const headerAnimatedStyle = useAnimatedStyle(() => {
@@ -60,7 +62,7 @@ export default function ParallaxScrollView({
         </Animated.View>
         : null
       }
-      <ThemedView style={styles.content}>{children}</ThemedView>
+      <ThemedView style={[styles.content, { paddingTop: insets.top + 16 }]}>{children}</ThemedView>
     </Animated.ScrollView>
   )
 }
@@ -75,7 +77,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 32,
+    padding: 16,
     gap: 16,
     overflow: 'hidden',
   },

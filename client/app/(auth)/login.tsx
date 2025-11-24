@@ -4,7 +4,7 @@ import { Platform, View, Button, Alert, KeyboardAvoidingView, StyleSheet } from 
 
 import { useAuth } from "@/hooks/use-auth"
 import ParallaxScrollView from "@/components/parallax-scroll-view"
-import ThemedTextInput from "@/components/themed-text-input"
+import { ThemedTextInput } from "@/components/themed-text-input"
 import { ThemedView } from "@/components/themed-view"
 import { ThemedText } from "@/components/themed-text"
 
@@ -20,12 +20,12 @@ export default function Login() {
     } catch {
       Alert.alert('Login failed. Please try again.')
     }
-  }  
+  }
 
   // TO-DO: improve page container handling
   return (
     <ParallaxScrollView>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
@@ -45,7 +45,7 @@ export default function Login() {
               secureTextEntry
             />
           </ThemedView>
-          <Button 
+          <Button
             title="Sign In"
             onPress={() => { void handleLogin() }}
           />
@@ -61,7 +61,7 @@ export default function Login() {
             </ThemedText>
             </ThemedText>
         </View>
-      </KeyboardAvoidingView>      
+      </KeyboardAvoidingView>
     </ParallaxScrollView>
   )
 }
@@ -79,5 +79,5 @@ const styles = StyleSheet.create({
   },
   inputGroup: {
     gap: 8,
-  }  
+  }
 })

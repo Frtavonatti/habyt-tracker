@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { StyleSheet, FlatList, Button } from 'react-native'
+import { StyleSheet, FlatList } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { habytService } from '@/services/habytServices'
@@ -7,8 +7,9 @@ import { useThemeColor } from '@/hooks/use-theme-color'
 import { HabytCard } from '@/components/habytCard'
 import { ThemedView } from '@/components/themed-view'
 import { ThemedTextInput } from '@/components/themed-text-input'
+import { ThemedButton } from '@/components/themed-button' 
 
-import type { Habyt } from '../../../../shared/src/habyt.types'
+import type { Habyt } from '@shared/habyt.types'
 
 export default function HomeScreen() {
   const [habyts, setHabyts] = useState<Habyt[]>([])
@@ -31,13 +32,16 @@ export default function HomeScreen() {
   const SearchHeader = () => (
     <ThemedView style={[
       styles.searchBar,
-      { paddingTop: insets.top + 16 } // SafeArea + padding
+      { paddingTop: insets.top + 16 }
     ]}>
-      <ThemedTextInput 
+      <ThemedTextInput
         style={styles.searchInput}
-        placeholder="Buscar hábitos..."
+        placeholder="Search habyts..."
       />
-      <Button title="+" />
+      <ThemedButton 
+        title="+"
+        size="medium"
+      />
     </ThemedView>
   )
 
@@ -58,21 +62,19 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     padding: 16,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   searchInput: {
     flex: 1,
-    height: 48,
   },
   listContent: {
-    paddingHorizontal: 4,
-    paddingBottom: 32,
     gap: 16,
   },
 })
