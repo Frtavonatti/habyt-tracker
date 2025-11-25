@@ -4,7 +4,7 @@ import type {
   EntryCreateBody, 
   EntryResponse, 
   EntryUpdateBody 
-} from '../../../shared/src/entry.types.js'
+} from '../../../shared/src/types/entry.types.js'
 
 import * as entryService from '../services/entry.service.js'
 import { findUserById } from '../services/user.service.js'
@@ -13,7 +13,7 @@ import { findHabytById } from '../services/habyt.service.js'
 import { validateHabytId, validateEntryId, validateTimeSpent } from '../validators/entry.validator.js'
 import { ForbiddenError } from '../utils/errors.js'
 import { toDateOnlyUTC } from '../utils/toDateOnly.js'
-import { toEntryBase } from '../../../shared/src/entry.types.js'
+import { toEntryBase } from '../../../shared/src/types/entry.types.js'
 
 export const listEntries = async (
   req: Request<{habytId: string}, unknown, unknown>, 

@@ -10,7 +10,7 @@ import { ThemedView } from '@/components/themed-view'
 import { ThemedTextInput } from '@/components/themed-text-input'
 import { ThemedButton } from '@/components/themed-button' 
 
-import type { Habyt } from '@shared/habyt.types'
+import type { Habyt } from '@shared/types/habyt.types'
 
 export default function HomeScreen() {
   const [habyts, setHabyts] = useState<Habyt[]>([])

@@ -1,22 +1,29 @@
 import Habyt from "../models/habyt.js"
 import { ForbiddenError, NotFoundError } from "../utils/errors.js"
 
-import type { HabytCreateData, HabytUpdateData, HabytUpdateResult } from "../../../shared/src/habyt.types.js"
+import type { 
+  HabytCreateData, 
+  HabytUpdateData, 
+  HabytUpdateResult, 
+  Habyt as HabytDTO
+} from "@shared/types/habyt.types.js"
 
-export const findAllHabyts = (): Promise<Habyt[]> => {
-  return Habyt.findAll()
+export const findAllHabyts = async (): Promise<HabytDTO[]> => {
+  const habyts = await Habyt.findAll()
+  return habyts.map(h => h.toJSON())
 }
 
-export const findHabytById = async (id: string): Promise<Habyt> => {
+export const findHabytById = async (id: string): Promise<HabytDTO> => {
   const habyt = await Habyt.findByPk(id)
   if (!habyt) throw new NotFoundError('Habyt not Found')
-  return habyt
+  return habyt.toJSON()
 }
 
-export const createHabyt = (
+export const createHabyt = async (
   { title, description, userId }: HabytCreateData
-): Promise<Habyt> =>  {
-  return Habyt.create({ title, description, userId })
+): Promise<HabytDTO> =>  {
+  const habyt = await Habyt.create({ title, description, userId })
+  return habyt.toJSON()
 }
 
 export const updateHabyt = async (
@@ -25,8 +32,9 @@ export const updateHabyt = async (
   const habyt = await Habyt.findByPk(id)
   if (!habyt) throw new NotFoundError('Habyt not found')
   if (habyt.userId !== userId) throw new ForbiddenError('Forbidden')
-  const updated = await habyt.update({ title, description })
-  return { habyt: updated }
+  
+  await habyt.update({ title, description })
+  return { habyt: habyt.toJSON() }
 }
 
 export const deleteHabyt = async (
@@ -35,6 +43,7 @@ export const deleteHabyt = async (
   const habyt = await Habyt.findByPk(id)
   if (!habyt) throw new NotFoundError('Habyt not found')
   if (habyt.userId !== userId) throw new ForbiddenError('Forbidden')
+
   await habyt.destroy()
   return { success: true }
 }

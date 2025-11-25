@@ -4,7 +4,7 @@ import { Platform, View, Button, Alert, KeyboardAvoidingView, StyleSheet } from 
 
 import { useAuth } from "@/hooks/use-auth"
 import ParallaxScrollView from "@/components/parallax-scroll-view"
-import ThemedTextInput from "@/components/themed-text-input"
+import { ThemedTextInput } from "@/components/themed-text-input"
 import { ThemedView } from "@/components/themed-view"
 import { ThemedText } from "@/components/themed-text"
 

@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import type { UserCreateBody, UsernameUpdateBody } from '../../../shared/src/user.types.js' // Funciona
+import type { UserCreateBody, UsernameUpdateBody } from '../../../shared/src/types/user.types.js' // Funciona
 
 import bcrypt from 'bcrypt'
 import * as userService from '../services/user.service.js'

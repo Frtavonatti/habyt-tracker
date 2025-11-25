@@ -5,7 +5,7 @@ import assert from "node:assert"
 
 import app from "../src/index.js"
 import { User, Habyt } from "../src/models/index.js"
-import type { HabytResponse, LoginResponse } from "../../shared/src/index.js"
+import type { Habyt as HabytResponse, LoginResponse } from "../../shared/src/index.js"
 
 const api = supertest(app)
 

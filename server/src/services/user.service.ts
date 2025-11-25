@@ -1,6 +1,6 @@
 import User from "../models/user.js"
 import { NotFoundError, BadRequestError, AppError } from "../utils/errors.js"
-import type { UserCreateData, UserResponse  } from "../../../shared/src/user.types.js"
+import type { UserCreateData, UserResponse  } from "../../../shared/src/types/user.types.js"
 
 export const findAll = (): Promise<User[]> => {
   return User.findAll()

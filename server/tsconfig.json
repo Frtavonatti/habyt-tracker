@@ -12,11 +12,12 @@
     "isolatedModules": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
+      "@/*": ["./src/*"],
+      "@shared": ["../shared/src/index.ts"],
       "@shared/*": ["../shared/src/*"]
     }
   },
-  "include": [ "src/**/*.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["dist", "tests"],
   "references": [
     { "path": "../shared" }

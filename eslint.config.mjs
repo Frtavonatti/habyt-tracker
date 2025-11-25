@@ -7,7 +7,8 @@ export default [
       '**/dist/**',
       '**/.tsbuildinfo',
       'eslint.config.mjs',
-      'client/scripts/**/*.js'
+      'client/scripts/**/*.js',
+      '**/node_modules/**'
     ]
   },
   eslint.configs.recommended,
@@ -35,16 +36,20 @@ export default [
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        project: [
-          './server/tsconfig.json',
-        ],
-        tsconfigRootDir: import.meta.dirname
+        project: ['./server/tsconfig.json'],
+        tsconfigRootDir: import.meta.dirname 
       }
     },
     rules: {
       semi: ['error', 'never'],
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }]
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      // Disable rules incompatible with Express + Zod
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off'      
     }
   },
 
@@ -58,7 +63,9 @@ export default [
       }
     },
     rules: {
-      '@typescript-eslint/no-floating-promises': 'off' // Avoid false positives in tests.
+      '@typescript-eslint/no-floating-promises': 'off', // Avoid false positives in tests.
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off'
     }
   },
 
@@ -74,7 +81,11 @@ export default [
     rules: {
       semi: ['error', 'never'],
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }]
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      // Fetch API + Zod = these rules cause false positives
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off'
     }
   },
 ]

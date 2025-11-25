@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native"
 import { ThemedView } from "./themed-view"
 import { ThemedText } from "./themed-text"
 
-import type { Habyt } from '@shared/habyt.types'
+import type { Habyt } from '@shared/types/habyt.types'
 
 export function HabytCard ({ title, description }: Habyt) {
   return (

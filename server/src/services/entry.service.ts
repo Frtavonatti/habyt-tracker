@@ -1,6 +1,6 @@
 import Entry from "../models/entry.js"
 import { NotFoundError, AppError } from "../utils/errors.js"
-import type { EntryCreateBody, EntryUpdateBody } from "../../../shared/src/entry.types.js"
+import type { EntryCreateBody, EntryUpdateBody } from "../../../shared/src/types/entry.types.js"
 
 export const findAll = (habytId: string): Promise<Entry[]> => {
   return Entry.findAll({

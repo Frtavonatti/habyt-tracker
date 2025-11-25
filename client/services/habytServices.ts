@@ -1,6 +1,6 @@
 import { config } from '@/constants/config'
 
-import type { Habyt, HabytCreateBody } from '../../shared/src/habyt.types'
+import type { Habyt, HabytCreateRequest } from '../../shared/src/types/habyt.types'
 
 // TO-DO: Consider switching to a singleton/service layer pattern to improve testability
 export const habytService = {
@@ -16,7 +16,7 @@ export const habytService = {
     return data as Habyt[]
   },
 
-  createHabyt: async ({ title, description, token }: HabytCreateBody): Promise<Habyt> => {
+  createHabyt: async ({ title, description, token }: HabytCreateRequest): Promise<Habyt> => {
     const response = await fetch(`${config.apiBaseUrl}/habyts`, {
       method: 'POST',
       headers: {
