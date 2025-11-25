@@ -10,7 +10,7 @@ export interface Habyt {
 export interface HabytCreateBody {
   title: string
   description?: string | null
-  token?: string
+  token?: string | null
   decodedToken?: { id: string, username: string } | null
 }
 
