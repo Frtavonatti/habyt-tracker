@@ -4,7 +4,7 @@ export const userCreateSchema = z.object({
   username: z.string().min(1, 'Username is required').trim(),
   name: z.string().min(1, 'Name is required').trim(),
   email: z.email('Invalid email format').trim(),
-  password: z.string().min(6, 'Password must be at least 6 chars').trim()
+  password: z.string().min(6, 'Password must be at least 6 chars')
 })
 
 export const usernameUpdateSchema = z.object({
