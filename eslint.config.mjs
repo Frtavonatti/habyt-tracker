@@ -45,11 +45,11 @@ export default [
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       // Disable rules incompatible with Express + Zod
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off'      
+      // '@typescript-eslint/no-unsafe-assignment': 'off',
+      // '@typescript-eslint/no-unsafe-call': 'off',
+      // '@typescript-eslint/no-unsafe-member-access': 'off',
+      // '@typescript-eslint/no-unsafe-return': 'off',
+      // '@typescript-eslint/no-unsafe-argument': 'off'      
     }
   },
 
@@ -83,9 +83,9 @@ export default [
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       // Fetch API + Zod = these rules cause false positives
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off'
+      // '@typescript-eslint/no-unsafe-assignment': 'off',
+      // '@typescript-eslint/no-unsafe-call': 'off',
+      // '@typescript-eslint/no-unsafe-member-access': 'off'
     }
   },
 ]

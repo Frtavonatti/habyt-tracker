@@ -1,5 +1,9 @@
 import type { z } from 'zod'
-import type { habytCreateSchema, habytUpdateSchema, habytSchema } from '../schemas/habyt.schema.js'
+import type { 
+  habytCreateSchema, 
+  habytUpdateSchema, 
+  habytSchema 
+} from '../schemas/habyt.schema.js'
 
 export type HabytCreateBody = z.infer<typeof habytCreateSchema>
 export type HabytUpdateBody = z.infer<typeof habytUpdateSchema>
@@ -19,8 +23,4 @@ export interface HabytUpdateData {
   title: string
   description: string | null
   userId: string
-}
-
-export interface HabytUpdateResult { 
-  habyt: Habyt
 }
