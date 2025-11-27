@@ -1,6 +1,6 @@
 import { config } from '@/constants/config'
 
-import type { Habyt, HabytCreateRequest } from '../../shared/src/types/habyt.types'
+import type { Habyt, HabytCreateRequest } from '@shared/types/habyt.types'
 
 // TO-DO: Consider switching to a singleton/service layer pattern to improve testability
 export const habytService = {
