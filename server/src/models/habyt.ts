@@ -10,8 +10,8 @@ import { sequelize } from "../db/index.js"
 import type User from "./user.js"
 
 export class Habyt extends Model<
-  InferAttributes<Habyt, { omit: 'createdAt' | 'updatedAt' }>,
-  InferCreationAttributes<Habyt>
+  InferAttributes<Habyt>,
+  InferCreationAttributes<Habyt, { omit: 'createdAt' | 'updatedAt' }>
 > {
   declare id: CreationOptional<string>
   declare title: string
@@ -39,6 +39,14 @@ Habyt.init(
     },
     userId: {
       type: DataTypes.UUID,
+      allowNull: false,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
       allowNull: false,
     },
   },

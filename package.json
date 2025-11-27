@@ -8,10 +8,15 @@
     "shared"
   ],
   "scripts": {
-    "dev": "npm run dev -w server",
-    "build": "npm run build -w server",
-    "start": "npm run start -w server",
-    "test": "npm run test -w server",
+    "client:start": "npm run start -w client",
+    "client:android": "npm run android -w client",
+    "client:ios": "npm run ios -w client",
+    "server:dev": "npm run dev -w server",
+    "server:build": "npm run build -w server",
+    "server:start": "npm run start -w server",
+    "server:test": "npm run test -w server",
+    "shared:typecheck": "npm run typecheck -w shared",
+    "build": "npm run typecheck",
     "verify": "npm run lint && npm run typecheck && npm test",
     "typecheck": "tsc -b --pretty",
     "lint": "eslint .",
@@ -23,19 +28,16 @@
     "db:connect": "docker exec -it habyt-postgres psql -U app -d devdatabase",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose stop postgres",
-    "db:destroy": "docker compose down -v postgres"
+    "db:destroy": "docker compose down -v postgres",
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "dev:all": "concurrently \"npm run db:up\" \"npm run server:dev\" \"npm run client:dev\""
   },
   "author": "frtavonatti",
   "license": "MIT",
   "description": "This project was built to showcase a full stack habit tracking application using TypeScript, React Native, React, Express, Sequelize, PostgreSQL and Docker.",
   "devDependencies": {
     "@eslint/js": "^9.36.0",
-    "@types/express": "^5.0.3",
-    "@types/node": "^24.5.2",
-    "@types/pg": "^8.15.5",
-    "@types/sequelize": "^4.28.20",
     "eslint": "^9.36.0",
-    "tsx": "^4.20.6",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.44.1"
   }

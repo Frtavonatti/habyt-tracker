@@ -4,7 +4,7 @@ import { useRouter } from "expo-router"
 import { authService } from "@/services/authService"
 
 import type { ReactNode } from "react"
-import type { LoginBody, UserCreateBody } from "../../shared/src/index"
+import type { LoginBody, UserCreateBody } from "@shared/index"
 
 interface AuthContextType {
   isAuthenticated: boolean

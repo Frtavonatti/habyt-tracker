@@ -1,5 +1,5 @@
 import { config } from "@/constants/config"
-import type { LoginBody, LoginResponse, UserCreateBody } from "../../shared/src/index"
+import type { LoginBody, LoginResponse, UserCreateBody } from "@shared/index"
 
 export const authService = {
   async login({ username, password }: LoginBody): Promise<LoginResponse> {

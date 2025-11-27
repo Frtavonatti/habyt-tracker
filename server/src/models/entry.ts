@@ -10,8 +10,8 @@ import { sequelize } from "../db/index.js"
 import type Habyt from "./habyt.js"
 
 class Entry extends Model<
-  InferAttributes<Entry, { omit: 'createdAt' | 'updatedAt' }>,
-  InferCreationAttributes<Entry>
+  InferAttributes<Entry>,
+  InferCreationAttributes<Entry, { omit: 'createdAt' | 'updatedAt' }>
 > {
   declare id: CreationOptional<string>
   declare date: string // YYYY-MM-DD (DateOnly)
@@ -46,6 +46,14 @@ Entry.init(
     },
     habytId: {
       type: DataTypes.UUID,
+      allowNull: false,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
       allowNull: false,
     },
   },

@@ -1,26 +1,25 @@
 import Entry from "../models/entry.js"
 import { NotFoundError, AppError } from "../utils/errors.js"
-import type { EntryCreateBody, EntryUpdateBody } from "../../../shared/src/entry.types.js"
+import type { EntryCreateData, EntryUpdateBody, Entry as EntryDTO } from "@shared/types/entry.types.js"
 
-export const findAll = (habytId: string): Promise<Entry[]> => {
-  return Entry.findAll({
+export const findAll = async (habytId: string): Promise<EntryDTO[]> => {
+  return await Entry.findAll({
     where: { habytId },
     order: [['date', 'DESC']] 
   })
 }
 
-export const findEntryById = async (id: string): Promise<Entry> => {
+export const findEntryById = async (id: string): Promise<EntryDTO> => {
   const entry = await Entry.findByPk(id)
   if (!entry) throw new NotFoundError('Entry not found')
   return entry
 }
 
 export const createEntry = async (
-  { date, completed = false, timeSpentMinutes = null, habytId }: EntryCreateBody)
-  : Promise<Entry> => {
+  { date, completed = false, timeSpentMinutes = null, habytId }: EntryCreateData
+): Promise<EntryDTO> => {
   try {
-    const newEntry = await Entry.create({ date, completed, timeSpentMinutes, habytId })
-    return newEntry
+    return await Entry.create({ date, completed, timeSpentMinutes, habytId })
   } catch (error: unknown) {
       if ((error as { name: string }).name === "SequelizeUniqueConstraintError")
         throw new AppError('Entry for this date already exists', 409)
@@ -29,22 +28,23 @@ export const createEntry = async (
 }
 
 export const updateEntry = async (
-  id: string, completed: boolean, timeSpentMinutes: number | null)
-  : Promise<Entry> => {
+  id: string, updates: EntryUpdateBody
+): Promise<EntryDTO> => {
   const entry = await Entry.findByPk(id)
-  if (!entry) throw new NotFoundError('Entry not found') 
-
-  const updates: EntryUpdateBody = { completed }
-  if (timeSpentMinutes !== null && timeSpentMinutes !== undefined)
-    updates.timeSpentMinutes = timeSpentMinutes
+  if (!entry) throw new NotFoundError('Entry not found')
   
-  return await entry.update(updates)
+  const updateData: Partial<{ completed: boolean; timeSpentMinutes: number | null }> = {}
+  if (updates.completed !== undefined)
+    updateData.completed = updates.completed
+  if (updates.timeSpentMinutes !== undefined)
+    updateData.timeSpentMinutes = updates.timeSpentMinutes
+
+  return await entry.update(updateData)
 }
 
 export const deleteEntry = async (id: string)
-: Promise<{ success: true }> => {
+: Promise<void> => {
   const entry = await Entry.findByPk(id)
   if (!entry) throw new NotFoundError('Entry not found') 
-  await entry.destroy()
-  return { success: true }
+  return entry.destroy()
 }

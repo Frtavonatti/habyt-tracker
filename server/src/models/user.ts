@@ -8,8 +8,8 @@ import type {
 import { sequelize } from "../db/index.js"
 
 class User extends Model<
-  InferAttributes<User, { omit: 'createdAt' | 'updatedAt' }>,
-  InferCreationAttributes<User>
+  InferAttributes<User>,
+  InferCreationAttributes<User, { omit: 'createdAt' | 'updatedAt' }>
 > {
   declare id: CreationOptional<string>
   declare name: string
@@ -53,6 +53,14 @@ User.init(
     },
     passwordHash: {
       type: DataTypes.STRING,
+      allowNull: false,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
       allowNull: false,
     },
   },

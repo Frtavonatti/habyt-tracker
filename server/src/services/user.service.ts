@@ -1,6 +1,6 @@
 import User from "../models/user.js"
 import { NotFoundError, BadRequestError, AppError } from "../utils/errors.js"
-import type { UserCreateData, UserResponse  } from "../../../shared/src/user.types.js"
+import type { UserCreateData, UserResponse  } from "@shared/types/user.types.js"
 
 export const findAll = (): Promise<User[]> => {
   return User.findAll()
@@ -24,6 +24,7 @@ export const createUser = async (
     email: email.toLowerCase().trim(),
     passwordHash,
   })
-  if (!newUser) throw new AppError('Error creating new user', 500)
+  if (!newUser) 
+    throw new AppError('Error creating new user', 500)
   return newUser
 }
