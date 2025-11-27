@@ -2,6 +2,7 @@ import supertest from "supertest"
 import bcrypt from "bcrypt"
 import { test, describe, beforeEach } from "node:test"
 import assert from "node:assert"
+import { randomUUID } from "node:crypto"
 
 import app from "../src/index.js"
 import { User, Habyt } from "../src/models/index.js"
@@ -22,7 +23,7 @@ const habytList = [
   { title: "Meditation", description: "Meditate for 10 minutes" },
 ]
 
-const nonExistentId = "99999999-9999-9999-9999-999999999999"
+const nonExistentId = randomUUID()
 
 const loginAndGetToken = async () => {
   const loginResponse = await api.post('/api/login').send({

@@ -2,12 +2,13 @@ import supertest from "supertest"
 import bcrypt from "bcrypt"
 import { test, describe, beforeEach } from "node:test"
 import assert from "node:assert"
+import { randomUUID } from "node:crypto"
 
 import app from "../src/index.js"
 import { User, Habyt, Entry } from "../src/models/index.js"
 import { toDateOnlyUTC } from "../src/utils/toDateOnly.js"
 
-import type { EntryBase, LoginResponse } from "../../shared/src/index.js"
+import type { Entry as EntryBase, LoginResponse } from "../../shared/src/index.js"
 
 const api = supertest(app)
 
@@ -20,7 +21,7 @@ const initialUser = {
 
 const initialHabyt = { title: "Read Books", description: "Read for 30 minutes daily" }
 const initialEntry = { completed: true, timeSpentMinutes: 30 }
-const nonExistentId = "99999999-9999-9999-9999-999999999999"
+const nonExistentId = randomUUID()
 
 const loginAndGetToken = async () => {
   const loginResponse = await api.post('/api/login').send({

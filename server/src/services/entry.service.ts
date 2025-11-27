@@ -1,6 +1,6 @@
 import Entry from "../models/entry.js"
 import { NotFoundError, AppError } from "../utils/errors.js"
-import type { EntryCreateData, Entry as EntryDTO } from "@shared/types/entry.types.js"
+import type { EntryCreateData, EntryUpdateBody, Entry as EntryDTO } from "@shared/types/entry.types.js"
 
 export const findAll = async (habytId: string): Promise<EntryDTO[]> => {
   return await Entry.findAll({
@@ -28,14 +28,18 @@ export const createEntry = async (
 }
 
 export const updateEntry = async (
-  id: string, 
-  completed: boolean, 
-  timeSpentMinutes: number | null
+  id: string, updates: EntryUpdateBody
 ): Promise<EntryDTO> => {
   const entry = await Entry.findByPk(id)
-  if (!entry) throw new NotFoundError('Entry not found') 
+  if (!entry) throw new NotFoundError('Entry not found')
+  
+  const updateData: Partial<{ completed: boolean; timeSpentMinutes: number | null }> = {}
+  if (updates.completed !== undefined)
+    updateData.completed = updates.completed
+  if (updates.timeSpentMinutes !== undefined)
+    updateData.timeSpentMinutes = updates.timeSpentMinutes
 
-  return await entry.update({ completed, timeSpentMinutes })
+  return await entry.update(updateData)
 }
 
 export const deleteEntry = async (id: string)

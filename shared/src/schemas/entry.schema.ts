@@ -8,8 +8,11 @@ export const entryCreateSchema = z.object({
 
 export const entryUpdateSchema = z.object({
   completed: z.boolean().optional().default(false),
-  timeSpentMinutes: z.number().int().nonnegative('Time spent must be non-negative').nullable().optional().default(null)
-})
+  timeSpentMinutes: z.number().int().nonnegative('Time spent must be non-negative').nullable().optional()
+}).refine(
+  (data) => data.completed !== undefined || data.timeSpentMinutes !== undefined,
+  { message: 'At least one field must be provided for update' }
+)
 
 // Params Schemas
 export const habytIdParamSchema = z.object({

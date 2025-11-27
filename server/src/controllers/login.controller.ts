@@ -2,8 +2,8 @@ import type { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 
+import { loginSchema } from '@shared/schemas/user.schema.js'
 import { User } from '../models/index.js'
-// import { validateUsername, validatePassword } from '../validators/user.validator.js'
 import { AppError } from '../utils/errors.js'
 import { JWT_SECRET } from '../config/index.js'
 
@@ -13,10 +13,7 @@ export const login = async (
   req: Request<unknown, unknown, LoginBody>,
   res: Response
 ) => {
-  const { username, password } = req.body
-  // validateUsername(username)
-  // validatePassword(password)
-
+  const { username, password } = loginSchema.parse(req.body)
   const user = await User.scope('withPassword').findOne({ where: { username } })
 
   const passwordCorrect = user

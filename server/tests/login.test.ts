@@ -5,7 +5,7 @@ import assert from "node:assert"
 
 import app from "../src/index.js"
 import { User } from "../src/models/index.js"
-import type { LoginResponse } from "../../shared/src/user.types.js"
+import type { LoginResponse } from "../../shared/src/types/user.types.js"
 
 interface BodyError {
   error: string

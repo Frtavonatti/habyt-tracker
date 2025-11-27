@@ -64,7 +64,7 @@ export const updateEntry = async (
   res: Response
 ) => {
   const { id } = entryIdParamSchema.parse(req.params)
-  const { completed, timeSpentMinutes } = entryUpdateSchema.parse(req.body)
+  const updateData = entryUpdateSchema.parse(req.body)
 
   const entry = await entryService.findEntryById(id)
   const habyt = await findHabytById(entry.habytId)
@@ -73,7 +73,7 @@ export const updateEntry = async (
   if (user.id !== habyt.userId)
     throw new ForbiddenError('Forbidden: only the habyt owner can update entries')
   
-  const result = await entryService.updateEntry(id, completed, timeSpentMinutes)
+  const result = await entryService.updateEntry(id, updateData)
   return res.json(result)
 }
 
