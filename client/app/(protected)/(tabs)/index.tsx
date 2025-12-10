@@ -38,6 +38,18 @@ export default function HomeScreen() {
     router.push('/(protected)/create-habyt-modal')
   }
 
+  const handleEdit = (habyt: Habyt) => {
+    console.log('Edit habyt:', habyt.id)
+    // TODO: Navigate to edit screen
+  }
+
+  const handleDelete = (habyt: Habyt) => {
+    console.log('Delete habyt:', habyt.id)
+    // TODO: Call API to delete
+    // await habytService.deleteHabyt(habyt.id)
+    setHabyts(prev => prev.filter(h => h.id !== habyt.id))
+  }
+
   const SearchHeader = () => (
     <ThemedView style={[
       styles.searchBar,
@@ -59,7 +71,13 @@ export default function HomeScreen() {
     <ThemedView style={styles.container}>
       <FlatList
         data={habyts}
-        renderItem={({item}) => <HabytCard {...item} />}
+        renderItem={({item}) => (
+          <HabytCard 
+            {...item} 
+            onEdit={() => handleEdit(item)}
+            onDelete={() => handleDelete(item)}
+          />
+        )}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={SearchHeader}
         contentContainerStyle={styles.listContent}
