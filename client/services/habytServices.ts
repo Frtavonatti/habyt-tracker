@@ -1,6 +1,6 @@
 import { config } from '@/constants/config'
 
-import type { Habyt, HabytCreateRequest } from '@shared/types/habyt.types'
+import type { Habyt, HabytCreateRequest, HabytUpdateRequest, HabytDeleteRequest } from '@shared/types/habyt.types'
 
 // TO-DO: Consider switching to a singleton/service layer pattern to improve testability
 export const habytService = {
@@ -26,6 +26,38 @@ export const habytService = {
       body: JSON.stringify({ title, description })
     })
 
-    return await response.json()
+    if (!response.ok)
+      throw new Error(`Response status: ${response.status}`)
+
+    return await response.json() as Habyt
+  },
+
+  // This is just a template
+/*   updateHabyt: async ({ id, title, description, token }: HabytUpdateRequest): Promise<Habyt> => {
+    const response = await fetch(`${config.apiBaseUrl}/habyts/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ title, description })
+    })
+
+    if (!response.ok)
+      throw new Error(`Response status: ${response.status}`)
+
+    return await response.json() as Habyt
+  }, */
+
+  deleteHabyt: async ({ id, token }: HabytDeleteRequest): Promise<void> => {
+    const response = await fetch(`${config.apiBaseUrl}/habyts/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    if (!response.ok)
+      throw new Error(`Response status: ${response.status}`)
   }
 }

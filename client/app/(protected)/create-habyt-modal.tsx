@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { StyleSheet, KeyboardAvoidingView, Platform } from 'react-native'
 import { useRouter } from 'expo-router'
 
-import { useAuth } from '@/hooks/use-auth'
+import { useRequireAuth } from '@/hooks/use-auth'
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
 import { ThemedTextInput } from '@/components/themed-text-input'
@@ -10,7 +10,7 @@ import { ThemedButton } from '@/components/themed-button'
 import { habytService } from '@/services/habytServices'
 
 export default function CreateHabytModal() {
-  const { token } = useAuth()
+  const { token } = useRequireAuth()
   const router = useRouter()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')

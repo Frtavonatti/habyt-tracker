@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { StyleSheet, KeyboardAvoidingView } from 'react-native'
 import { Image } from 'expo-image' 
 
-import { useAuth } from '@/hooks/use-auth'
+import { useRequireAuth } from '@/hooks/use-auth'
 import { useTheme } from '@/contexts/ThemeContext'
 import ParallaxScrollView from '@/components/parallax-scroll-view'
 import { ThemedText } from '@/components/themed-text'
@@ -15,7 +15,7 @@ import reactLogo from '@/assets/images/react-logo.png'
 
 
 export default function Settings () {
-  const { logout } = useAuth()
+  const { logout } = useRequireAuth()
   const { theme, setTheme } = useTheme()
 
   const [loginEmail, setLoginEmail] = useState('')

@@ -10,6 +10,11 @@ export type HabytUpdateBody = z.infer<typeof habytUpdateSchema>
 export type Habyt = z.infer<typeof habytSchema>
 
 export type HabytCreateRequest = HabytCreateBody & { token: string }
+export type HabytUpdateRequest = HabytUpdateBody & { id: string, token: string }
+export interface HabytDeleteRequest { 
+  id: string, 
+  token: string 
+} 
 
 // Services
 export interface HabytCreateData {

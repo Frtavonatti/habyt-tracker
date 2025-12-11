@@ -3,12 +3,12 @@ import { Stack, Redirect } from 'expo-router'
 import { useAuth } from '@/hooks/use-auth'
 
 export default function ProtectedLayout() {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { state } = useAuth()
 
-  if (isLoading)
+  if (state.status === 'loading')
     return <ActivityIndicator />
 
-  if (!isAuthenticated)
+  if (state.status === 'unauthenticated')
     return <Redirect href="/(auth)/login" />
 
   return (

@@ -3,6 +3,7 @@ import { StyleSheet, FlatList } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 
+import { useRequireAuth } from '@/hooks/use-auth'
 import { habytService } from '@/services/habytServices'
 import { useThemeColor } from '@/hooks/use-theme-color'
 import { HabytCard } from '@/components/habyt-card'
@@ -13,6 +14,7 @@ import { ThemedButton } from '@/components/themed-button'
 import type { Habyt } from '@shared/types/habyt.types'
 
 export default function HomeScreen() {
+  const { token } = useRequireAuth()
   const [habyts, setHabyts] = useState<Habyt[]>([])
   const insets = useSafeAreaInsets()
   const backgroundColor = useThemeColor({}, 'background')
@@ -43,11 +45,13 @@ export default function HomeScreen() {
     // TODO: Navigate to edit screen
   }
 
-  const handleDelete = (habyt: Habyt) => {
-    console.log('Delete habyt:', habyt.id)
-    // TODO: Call API to delete
-    // await habytService.deleteHabyt(habyt.id)
-    setHabyts(prev => prev.filter(h => h.id !== habyt.id))
+  const handleDelete = async (habyt: Habyt) => {
+    try {
+      await habytService.deleteHabyt({ id: habyt.id, token })
+      setHabyts(prev => prev.filter(h => h.id !== habyt.id))
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   const SearchHeader = () => (
@@ -75,7 +79,7 @@ export default function HomeScreen() {
           <HabytCard 
             {...item} 
             onEdit={() => handleEdit(item)}
-            onDelete={() => handleDelete(item)}
+            onDelete={() => void handleDelete(item)}
           />
         )}
         keyExtractor={(item) => item.id}
