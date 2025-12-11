@@ -41,8 +41,14 @@ export default function HomeScreen() {
   }
 
   const handleEdit = (habyt: Habyt) => {
-    console.log('Edit habyt:', habyt.id)
-    // TODO: Navigate to edit screen
+    router.push({ 
+      pathname: '/(protected)/update-habyt-modal', 
+      params: {
+        id: habyt.id,
+        title: habyt.title,
+        description: habyt.description ?? ''
+      }
+    })
   }
 
   const handleDelete = async (habyt: Habyt) => {

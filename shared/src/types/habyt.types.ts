@@ -25,7 +25,7 @@ export interface HabytCreateData {
 
 export interface HabytUpdateData {
   id: string
-  title: string
-  description: string | null
+  title?: string
+  description?: string | null
   userId: string
 }

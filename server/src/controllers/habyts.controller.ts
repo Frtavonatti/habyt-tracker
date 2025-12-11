@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import type { HabytCreateBody, HabytUpdateBody } from '@shared/types/habyt.types.js'
+import type { HabytCreateBody, HabytUpdateBody, HabytUpdateData } from '@shared/types/habyt.types.js'
 import { habytCreateSchema, habytUpdateSchema } from '@shared/schemas/habyt.schema.js'
 
 import * as habytService from '../services/habyt.service.js'
@@ -38,18 +38,22 @@ export const updateHabyt = async (
   res: Response
 ) => {
   const validatedData = habytUpdateSchema.parse(req.body)
-  const { title, description } = validatedData
 
   const user = await findUserById(req.decodedToken?.id as string)
 
-  const newHabyt = await habytService.updateHabyt({ 
+  const updateData: HabytUpdateData = {
     id: req.params.id,
-    title,
-    description: description ?? null,
     userId: user.id
-   })
+  }
 
-  return res.json(newHabyt)
+  if (validatedData.title !== undefined)
+    updateData.title = validatedData.title
+  if (validatedData.description !== undefined)
+    updateData.description = validatedData.description
+
+  const updatedHabyt = await habytService.updateHabyt(updateData)
+
+  return res.json(updatedHabyt)
 }
 
 export const deleteHabyt = async (req: Request<{ id: string }>, res: Response) => {

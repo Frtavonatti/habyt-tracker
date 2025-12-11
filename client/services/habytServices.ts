@@ -32,22 +32,28 @@ export const habytService = {
     return await response.json() as Habyt
   },
 
-  // This is just a template
-/*   updateHabyt: async ({ id, title, description, token }: HabytUpdateRequest): Promise<Habyt> => {
+  updateHabyt: async ({ id, token, title, description }: HabytUpdateRequest): Promise<Habyt> => {
+    const body: { title?: string; description?: string | null } = {}
+
+    if (title !== undefined) 
+      body.title = title
+    if (description !== undefined)
+      body.description = description
+
     const response = await fetch(`${config.apiBaseUrl}/habyts/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ title, description })
+      body: JSON.stringify(body)
     })
 
-    if (!response.ok)
-      throw new Error(`Response status: ${response.status}`)
+  if (!response.ok)
+    throw new Error(`Response status: ${response.status}`)
 
     return await response.json() as Habyt
-  }, */
+  },
 
   deleteHabyt: async ({ id, token }: HabytDeleteRequest): Promise<void> => {
     const response = await fetch(`${config.apiBaseUrl}/habyts/${id}`, {

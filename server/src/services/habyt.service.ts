@@ -32,8 +32,12 @@ export const updateHabyt = async (
     throw new NotFoundError('Habyt not found')
   if (habyt.userId !== userId) 
     throw new ForbiddenError('Forbidden')
+
+  const updates: Partial<{ title: string; description: string | null }> = {}
+  if (title !== undefined) updates.title = title
+  if (description !== undefined) updates.description = description
   
-  return await habyt.update({ title, description })
+  return await habyt.update(updates)
 }
 
 export const deleteHabyt = async (

@@ -9,12 +9,12 @@ export const habytCreateSchema = z.object({
 }))
 
 export const habytUpdateSchema = z.object({
-  title: z.string().min(1, 'Title is required').trim(),
+  title: z.string().min(1, 'Title is required').trim().optional(),
   description: z.string().trim().nullable().optional()
-}).transform((data) => ({
-  title: data.title,
-  description: data.description ?? null
-}))
+}).refine(
+    (data) => data.title !== undefined || data.description !== undefined,
+    { message: "At least one field (title or description) must be provided" }
+  )
 
 export const habytSchema = z.object({
   id: z.uuid(),
