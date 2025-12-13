@@ -20,4 +20,4 @@ export function useRequireAuth() {
     token: state.token,
     logout: useAuth().logout
   }
-}
+} 

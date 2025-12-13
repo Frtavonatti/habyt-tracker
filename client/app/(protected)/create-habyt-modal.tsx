@@ -21,7 +21,6 @@ export default function CreateHabytModal() {
       setIsLoading(true)
       await habytService.createHabyt({ title, description, token })
       router.back()
-      // TODO: Refresh habyts list
     } catch (error) {
       console.error('Failed to create habyt:', error)
     } finally {
