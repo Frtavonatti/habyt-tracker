@@ -2,6 +2,7 @@ import { createContext, useState, useEffect } from "react"
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter } from "expo-router"
 import { authService } from "@/services/authService"
+import { isTokenExpired } from "@/hooks/use-token-validator"
 
 import type { ReactNode } from "react"
 import type { LoginBody, UserCreateBody } from "@shared/index"
@@ -31,10 +32,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadToken = async () => {
     try {
       const storedToken = await AsyncStorage.getItem('auth_token')
-      if (storedToken)
+      if (storedToken && !isTokenExpired(storedToken)) {
         setState({ status: 'authenticated', token: storedToken })
-      else
+      } else {
+        if (storedToken)
+          await AsyncStorage.removeItem('auth_token')
         setState({ status: 'unauthenticated' })
+      } 
     } catch (error) {
       console.error('Error loading token:', error)
       setState({ status: 'unauthenticated' })

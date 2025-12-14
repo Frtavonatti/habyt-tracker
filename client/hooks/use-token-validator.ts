@@ -2,7 +2,7 @@ import { useRef, useEffect} from 'react'
 import { Alert, AppState } from 'react-native'
 import { jwtDecode } from 'jwt-decode'
 
-function isTokenExpired (token: string): boolean {
+export function isTokenExpired (token: string): boolean {
   try {
     const decoded = jwtDecode(token)
     if (!decoded.exp) return true
@@ -20,7 +20,6 @@ export function useTokenValidator (
   onExpired: () => void,
   checkInterval = 60000 // 1 min by default
 ) {
-  // - [ ] TO-DO: study useRef and relation to intervals
   const intervalRef = useRef<number | null>(null)
   const hasShownAlert = useRef(false)
 
@@ -31,7 +30,6 @@ export function useTokenValidator (
       if (isTokenExpired(token) && !hasShownAlert.current) {
         if (intervalRef.current)
           clearInterval(intervalRef.current)
-        // - [ ] TO-DO: study alert params/options 
         Alert.alert(
           'Session Expired',
           'Your session has expired. Please login again.',
@@ -41,7 +39,8 @@ export function useTokenValidator (
               onExpired()
               hasShownAlert.current = false
             }
-          }]
+          }],
+          { cancelable: false }
         )
         hasShownAlert.current = true
       }
@@ -50,11 +49,9 @@ export function useTokenValidator (
     checkExpiration()
 
     // Verify periodically
-    // - [ ] TO-DO: study set interval | is this derived from useRef?
     intervalRef.current = setInterval(checkExpiration, checkInterval)
 
     // Verify when app returns to foreground
-    // - [ ] TO-DO: study appState
     const subscription = AppState.addEventListener('change', (nextAppState) => {
       if (nextAppState === 'active') 
         checkExpiration()
