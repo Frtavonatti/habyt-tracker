@@ -1,16 +1,16 @@
 import { config } from '@/constants/config'
 
 import type { Habyt, HabytCreateRequest, HabytUpdateRequest, HabytDeleteRequest } from '@shared/types/habyt.types'
-import { handleResponse } from '@/utils/api'
+import { handleResponse, safeFetch } from '@/utils/api'
 
 export const habytService = {
   fetchAllHabyts: async (): Promise<Habyt[]> => {
-    const response = await fetch(`${config.apiBaseUrl}/habyts`)
+    const response = await safeFetch(`${config.apiBaseUrl}/habyts`)
     return await handleResponse<Habyt[]>(response)
   },
 
   createHabyt: async ({ title, description, token }: HabytCreateRequest): Promise<Habyt> => {
-    const response = await fetch(`${config.apiBaseUrl}/habyts`, {
+    const response = await safeFetch(`${config.apiBaseUrl}/habyts`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ export const habytService = {
     if (description !== undefined)
       body.description = description
 
-    const response = await fetch(`${config.apiBaseUrl}/habyts/${id}`, {
+    const response = await safeFetch(`${config.apiBaseUrl}/habyts/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ export const habytService = {
   },
 
   deleteHabyt: async ({ id, token }: HabytDeleteRequest): Promise<void> => {
-    const response = await fetch(`${config.apiBaseUrl}/habyts/${id}`, {
+    const response = await safeFetch(`${config.apiBaseUrl}/habyts/${id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`

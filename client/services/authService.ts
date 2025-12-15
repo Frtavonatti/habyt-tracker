@@ -1,11 +1,11 @@
 import { config } from "@/constants/config"
-import { handleResponse } from "@/utils/api"
+import { handleResponse, safeFetch } from "@/utils/api"
 
 import type { LoginBody, LoginResponse, UserCreateBody } from "@shared/index"
 
 export const authService = {
   async login({ username, password }: LoginBody): Promise<LoginResponse> {
-    const response = await fetch(`${config.apiBaseUrl}/login`, {
+    const response = await safeFetch(`${config.apiBaseUrl}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -17,7 +17,7 @@ export const authService = {
   },
 
   async register({ username, name, password, email }: UserCreateBody): Promise<void> {
-    const response = await fetch(`${config.apiBaseUrl}/users`, {
+    const response = await safeFetch(`${config.apiBaseUrl}/users`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
