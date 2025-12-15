@@ -7,7 +7,6 @@ import { useTokenValidator } from '@/hooks/use-token-validator'
 export default function ProtectedLayout() {
   const { state, logout } = useAuth()
 
-  // - [ ] TO-DO: study usecallback
   const handleTokenExpired = useCallback(() => {
     void logout()
   }, [logout])

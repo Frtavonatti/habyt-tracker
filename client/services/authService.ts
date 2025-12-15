@@ -1,4 +1,6 @@
 import { config } from "@/constants/config"
+import { handleResponse } from "@/utils/api"
+
 import type { LoginBody, LoginResponse, UserCreateBody } from "@shared/index"
 
 export const authService = {
@@ -11,11 +13,7 @@ export const authService = {
       body: JSON.stringify({ username, password }),
     })
 
-    if (!response.ok) {
-      throw new Error('Login failed')
-    }
-
-    return await response.json() as LoginResponse
+    return await handleResponse<LoginResponse>(response)
   },
 
   async register({ username, name, password, email }: UserCreateBody): Promise<void> {
@@ -27,8 +25,6 @@ export const authService = {
       body: JSON.stringify({ username, name, password, email }),
     })
 
-    if (!response.ok) {
-      throw new Error('Registration failed')
-    }
+    await handleResponse(response)
   }
 }

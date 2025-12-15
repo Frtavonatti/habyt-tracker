@@ -1,19 +1,12 @@
 import { config } from '@/constants/config'
 
 import type { Habyt, HabytCreateRequest, HabytUpdateRequest, HabytDeleteRequest } from '@shared/types/habyt.types'
+import { handleResponse } from '@/utils/api'
 
-// TO-DO: Consider switching to a singleton/service layer pattern to improve testability
 export const habytService = {
   fetchAllHabyts: async (): Promise<Habyt[]> => {
     const response = await fetch(`${config.apiBaseUrl}/habyts`)
-    if (!response.ok)
-      throw new Error(`Response status: ${response.status}`)
-
-    const data: unknown = await response.json()
-    if (!Array.isArray(data))
-      throw new Error('Invalid response format: expected array')
-
-    return data as Habyt[]
+    return await handleResponse<Habyt[]>(response)
   },
 
   createHabyt: async ({ title, description, token }: HabytCreateRequest): Promise<Habyt> => {
@@ -26,10 +19,7 @@ export const habytService = {
       body: JSON.stringify({ title, description })
     })
 
-    if (!response.ok)
-      throw new Error(`Response status: ${response.status}`)
-
-    return await response.json() as Habyt
+    return await handleResponse<Habyt>(response)
   },
 
   updateHabyt: async ({ id, token, title, description }: HabytUpdateRequest): Promise<Habyt> => {
@@ -49,10 +39,7 @@ export const habytService = {
       body: JSON.stringify(body)
     })
 
-  if (!response.ok)
-    throw new Error(`Response status: ${response.status}`)
-
-    return await response.json() as Habyt
+    return await handleResponse<Habyt>(response)
   },
 
   deleteHabyt: async ({ id, token }: HabytDeleteRequest): Promise<void> => {
@@ -63,7 +50,6 @@ export const habytService = {
       }
     })
 
-    if (!response.ok)
-      throw new Error(`Response status: ${response.status}`)
+    await handleResponse(response)
   }
 }
