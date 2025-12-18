@@ -9,7 +9,7 @@ import { useThemeColor } from '@/hooks/use-theme-color'
 import { HabytCard } from '@/components/habyt-card'
 import { ThemedView } from '@/components/themed-view'
 import { ThemedTextInput } from '@/components/themed-text-input'
-import { ThemedButton } from '@/components/themed-button' 
+import { ThemedButton } from '@/components/themed-button'
 
 import type { Habyt } from '@shared/types/habyt.types'
 
@@ -25,7 +25,7 @@ export default function HomeScreen() {
       let isActive = true
       async function fetchHabyts() {
         try {
-          const response = await habytService.fetchAllHabyts()
+          const response = await habytService.fetchUserHabyts(token)
           if (isActive) setHabyts(response)
         } catch (error) {
           console.error('Failed to fetch habyts:', error)
@@ -41,8 +41,8 @@ export default function HomeScreen() {
   }
 
   const handleEdit = (habyt: Habyt) => {
-    router.push({ 
-      pathname: '/(protected)/update-habyt-modal', 
+    router.push({
+      pathname: '/(protected)/update-habyt-modal',
       params: {
         id: habyt.id,
         title: habyt.title,
@@ -69,7 +69,7 @@ export default function HomeScreen() {
         style={styles.searchInput}
         placeholder="Search habyts..."
       />
-      <ThemedButton 
+      <ThemedButton
         title="+"
         size="medium"
         onPress={createHabyt}
@@ -81,9 +81,9 @@ export default function HomeScreen() {
     <ThemedView style={styles.container}>
       <FlatList
         data={habyts}
-        renderItem={({item}) => (
-          <HabytCard 
-            {...item} 
+        renderItem={({ item }) => (
+          <HabytCard
+            {...item}
             onEdit={() => handleEdit(item)}
             onDelete={() => void handleDelete(item)}
           />

@@ -4,8 +4,12 @@ import type { Habyt, HabytCreateRequest, HabytUpdateRequest, HabytDeleteRequest 
 import { handleResponse, safeFetch } from '@/utils/api'
 
 export const habytService = {
-  fetchAllHabyts: async (): Promise<Habyt[]> => {
-    const response = await safeFetch(`${config.apiBaseUrl}/habyts`)
+  fetchUserHabyts: async (token: string): Promise<Habyt[]> => {
+    const response = await safeFetch(`${config.apiBaseUrl}/habyts`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
     return await handleResponse<Habyt[]>(response)
   },
 
@@ -25,7 +29,7 @@ export const habytService = {
   updateHabyt: async ({ id, token, title, description }: HabytUpdateRequest): Promise<Habyt> => {
     const body: { title?: string; description?: string | null } = {}
 
-    if (title !== undefined) 
+    if (title !== undefined)
       body.title = title
     if (description !== undefined)
       body.description = description
