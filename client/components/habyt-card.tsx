@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native"
 import { useEffect, useState } from "react"
+import { useRouter } from "expo-router"
 
 import { useRequireAuth } from "@/hooks/use-auth"
 import { entryService } from "@/services/entryServices"
@@ -17,6 +18,7 @@ interface HabytCardProps extends Habyt {
 
 export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCardProps) {
   const { token } = useRequireAuth()
+  const router = useRouter()
   const [entries, setEntries] = useState<Entry[]>([])
 
   const menuOptions = [
@@ -38,6 +40,7 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
     const fetchEntries = async () => {
       try {
         const response = await entryService.fetchAll(id, token)
+        // console.log(response)
         setEntries(response)
       } catch (error) {
         console.log(error)
@@ -47,7 +50,10 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
   }, [id])
 
   const handleCreate = () => {
-    console.log("Creating new entry")
+    router.push({
+      pathname: '/(protected)/create-entry-modal',
+      params: { habytId: id }
+    })
   }
 
   return (
