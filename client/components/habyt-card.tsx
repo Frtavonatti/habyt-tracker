@@ -1,9 +1,11 @@
 import { StyleSheet } from "react-native"
 import { useEffect, useState } from "react"
 import { useRouter } from "expo-router"
+import { WeeklyHeatMap } from "@symbiot.dev/react-native-heatmap"
 
-import { useRequireAuth } from "@/hooks/use-auth"
 import { entryService } from "@/services/entryServices"
+import { useRequireAuth } from "@/hooks/use-auth"
+import { useColorScheme } from "@/hooks/use-color-scheme"
 import { ThemedView } from "./themed-view"
 import { ThemedText } from "./themed-text"
 import { ThemedButton } from "./themed-button"
@@ -19,6 +21,7 @@ interface HabytCardProps extends Habyt {
 export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCardProps) {
   const { token } = useRequireAuth()
   const router = useRouter()
+  const colorScheme = useColorScheme() ?? 'light'
   const [entries, setEntries] = useState<Entry[]>([])
 
   const menuOptions = [
@@ -40,7 +43,6 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
     const fetchEntries = async () => {
       try {
         const response = await entryService.fetchAll(id, token)
-        // console.log(response)
         setEntries(response)
       } catch (error) {
         console.log(error)
@@ -56,6 +58,37 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
     })
   }
 
+  // GitHub-style heatmap theme
+  const heatmapTheme = {
+    scheme: colorScheme,
+    light: {
+      headerTextColor: '#11181C',
+      cellDefaultColor: '#ebedf0',
+      cellTextColor: '#11181C',
+      cellColor: {
+        1: '#9be9a8',
+        2: '#40c463',
+        3: '#30a14e',
+        4: '#216e39',
+        5: '#216e39',
+      },
+      sidebarTextColor: '#11181C',
+    },
+    dark: {
+      headerTextColor: '#ECEDEE',
+      cellDefaultColor: '#161b22',
+      cellTextColor: '#ECEDEE',
+      cellColor: {
+        1: '#0e4429',
+        2: '#006d32',
+        3: '#26a641',
+        4: '#39d353',
+        5: '#39d353',
+      },
+      sidebarTextColor: '#ECEDEE',
+    },
+  }
+
   return (
     <ThemedView style={styles.habytContainer}>
       <ThemedView style={styles.headerContainer}>
@@ -65,6 +98,12 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
         )}
       </ThemedView>
       <ThemedText>{description}</ThemedText>
+      <WeeklyHeatMap
+        data={entries.map(entry => (entry.date))}
+        theme={heatmapTheme}
+        pressable
+        onCellPress={() => console.log('cell pressed')}
+      />
       <ThemedButton
         title="Log Today"
         variant="secondary"
