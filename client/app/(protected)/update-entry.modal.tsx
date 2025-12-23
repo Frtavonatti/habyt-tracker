@@ -14,7 +14,7 @@ export default function CreateEntryModal() {
   const { token } = useRequireAuth()
   const router = useRouter()
   const params = useLocalSearchParams<{
-    habytId: string
+    id: string
   }>()
 
   const [completed, setCompleted] = useState(false)
@@ -22,21 +22,31 @@ export default function CreateEntryModal() {
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    if (!params.habytId) {
-      Alert.alert('Error', 'No habyt ID provided')
+    if (!params.id) {
+      Alert.alert('Error', 'No id provided')
       router.back()
       return
     }
   }, [])
 
-  // TO-DO: Update entries after creation
-  const handleCreate = async () => {
+  const handleUpdate = async () => {
     try {
       setIsLoading(true)
-      await entryService.createEntry({ habytId: params.habytId, token, timeSpentMinutes, completed })
+      await entryService.updateEntry({ id: params.id, token, timeSpentMinutes, completed })
       router.back()
     } catch (error) {
-      console.error('Failed to input new entry:', error)
+      console.error('Failed to edit entry:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    try {
+      setIsLoading(true)
+      await entryService.deleteEntry({ id: params.id, token })
+    } catch (error) {
+      console.log(error)
     } finally {
       setIsLoading(false)
     }
@@ -48,7 +58,7 @@ export default function CreateEntryModal() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.content}
       >
-        <ThemedText type="title">Input a new entry</ThemedText>
+        <ThemedText type="title">Edit entry</ThemedText>
 
         <ThemedView style={styles.form}>
           <ThemedCheckbox
@@ -75,8 +85,15 @@ export default function CreateEntryModal() {
             disabled={isLoading}
           />
           <ThemedButton
-            title="Create"
-            onPress={() => void handleCreate()}
+            title="Delete"
+            variant="danger"
+            onPress={() => void handleDelete()}
+            style={styles.button}
+            disabled={isLoading}
+          />
+          <ThemedButton
+            title="Submit"
+            onPress={() => void handleUpdate()}
             style={styles.button}
             disabled={isLoading}
           />

@@ -53,8 +53,15 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
 
   const handleCreate = () => {
     router.push({
-      pathname: '/(protected)/create-entry-modal',
+      pathname: '/create-entry-modal',
       params: { habytId: id }
+    })
+  }
+
+  const handleEdit = () => {
+    router.push({
+      pathname: '/update-entry.modal',
+      params: { id } // This should connect to the entryId from the component
     })
   }
 
@@ -102,7 +109,7 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
         data={entries.map(entry => (entry.date))}
         theme={heatmapTheme}
         pressable
-        onCellPress={() => console.log('cell pressed')}
+        onCellPress={() => handleEdit()}
       />
       <ThemedButton
         title="Log Today"

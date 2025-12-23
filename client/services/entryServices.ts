@@ -1,34 +1,58 @@
 import { config } from "@/constants/config"
-import { handleResponse, safeFetch } from "@/utils/api"
+import { handleResponse, safeFetch, handleHeaders } from "@/utils/api"
 
-import { Entry } from "@shared"
+import type { Entry, EntryCreateRequest, EntryUpdateRequest } from "@shared"
 
-const habytEntriesUrl = (id: string) => (`${config.apiBaseUrl}/habyts/${id}/entries`)
-const entryUrl = (id: string) => (`${config.apiBaseUrl}/${id}`)
+const habytEntriesUrl = (id: string) => `${config.apiBaseUrl}/habyts/${id}/entries`
+const entryUrl = (id: string) => `${config.apiBaseUrl}/entries/${id}`
 
 export const entryService = {
   fetchAll: async (id: string, token: string) => {
-    const response = await fetch(`${habytEntriesUrl(id)}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+    const response = await safeFetch(habytEntriesUrl(id), {
+      headers: handleHeaders(token),
     })
 
     return await handleResponse<Entry[]>(response)
   },
 
-  createEntry: async ({ id, token, timeSpentMinutes, completed }) => {
-    const body = { timeSpentMinutes, completed }
+  createEntry: async ({ habytId, token, timeSpentMinutes, completed }: EntryCreateRequest) => {
+    const body = { 
+      timeSpentMinutes, 
+      completed 
+    }
 
-    const response = await safeFetch(habytEntriesUrl(id), {
+    const response = await safeFetch(habytEntriesUrl(habytId), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
+      headers: handleHeaders(token, true),
       body: JSON.stringify(body)
     })
 
     return await handleResponse<Entry>(response)
   },
+
+  updateEntry: async ({ id, token, timeSpentMinutes, completed }: EntryUpdateRequest) => {
+    const body: Partial<{ timeSpentMinutes: number | null; completed: boolean }> = {}
+    
+    if (timeSpentMinutes !== undefined)
+      body.timeSpentMinutes = timeSpentMinutes
+    if (completed !== undefined)
+      body.completed = completed
+
+    const response = await safeFetch(entryUrl(id), {
+      method: 'PUT',
+      headers: handleHeaders(token, true),
+      body: JSON.stringify(body)
+    })
+
+    return await handleResponse<Entry>(response)
+  },
+
+  deleteEntry: async ({ id, token }: { id: string, token: string }) => {
+    const response = await safeFetch(entryUrl(id), {
+      method: 'DELETE',
+      headers: handleHeaders(token)
+    })
+
+    await handleResponse(response)
+  }
 }

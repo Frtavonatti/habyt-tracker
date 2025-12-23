@@ -56,3 +56,15 @@ export const handleResponse = async <T>(response: Response): Promise<T> => {
 
   return await response.json() as T
 }
+
+export const handleHeaders = (token: string, hasBody = false) => {
+  const headers: Record<string, string> = {
+    'Authorization': `Bearer ${token}`
+  }
+
+  if (hasBody) {
+    headers['Content-Type'] = 'application/json'
+  }
+
+  return headers
+}

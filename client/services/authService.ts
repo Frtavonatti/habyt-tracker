@@ -7,9 +7,7 @@ export const authService = {
   async login({ username, password }: LoginBody): Promise<LoginResponse> {
     const response = await safeFetch(`${config.apiBaseUrl}/login`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
     })
 
@@ -19,9 +17,7 @@ export const authService = {
   async register({ username, name, password, email }: UserCreateBody): Promise<void> {
     const response = await safeFetch(`${config.apiBaseUrl}/users`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' }, 
       body: JSON.stringify({ username, name, password, email }),
     })
 
