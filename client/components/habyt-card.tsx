@@ -1,6 +1,7 @@
-import { StyleSheet } from "react-native"
-import { useEffect, useState } from "react"
+import { StyleSheet, Alert } from "react-native"
+import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "expo-router"
+import { useFocusEffect } from "@react-navigation/native"
 import { WeeklyHeatMap } from "@symbiot.dev/react-native-heatmap"
 
 import { entryService } from "@/services/entryServices"
@@ -24,6 +25,27 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
   const colorScheme = useColorScheme() ?? 'light'
   const [entries, setEntries] = useState<Entry[]>([])
 
+  const fetchEntries = useCallback(async () => {
+    try {
+      const response = await entryService.fetchAll(id, token)
+      setEntries(response)
+    } catch (error) {
+      console.log(error)
+    }
+  }, [id, token])
+
+  // Fetch entries when component mounts
+  useEffect(() => {
+    void fetchEntries()
+  }, [fetchEntries])
+
+  // Refetch entries when screen comes back into focus (after editing)
+  useFocusEffect(
+    useCallback(() => {
+      void fetchEntries()
+    }, [fetchEntries])
+  )
+
   const menuOptions = [
     ...(onEdit ? [{
       label: 'Edit',
@@ -39,33 +61,54 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
     }] : []),
   ]
 
-  useEffect(() => {
-    const fetchEntries = async () => {
-      try {
-        const response = await entryService.fetchAll(id, token)
-        setEntries(response)
-      } catch (error) {
-        console.log(error)
-      }
-    }
-    void fetchEntries()
-  }, [id])
-
   const handleCreate = () => {
     router.push({
-      pathname: '/create-entry-modal',
+      pathname: '/(protected)/create-entry-modal',
       params: { habytId: id }
     })
   }
 
-  const handleEdit = () => {
-    router.push({
-      pathname: '/update-entry.modal',
-      params: { id } // This should connect to the entryId from the component
-    })
+  const handleEdit = (date: Date) => {
+    const dateString = date.toISOString().split('T')[0] // Convert to YYYY-MM-DD
+    const entry = entries.find(e => e.date === dateString)
+
+    if (entry) {
+      router.push({
+        pathname: '/(protected)/update-entry.modal',
+        params: {
+          entryId: entry.id,
+          completed: entry.completed.toString(),
+          timeSpentMinutes: entry.timeSpentMinutes?.toString() ?? '',
+        }
+      })
+    } else {
+      Alert.alert('No entry', 'No entry exists for this date')
+    }
   }
 
-  // GitHub-style heatmap theme
+  const heatmapData = entries.reduce((acc, entry) => {
+    let level = 0
+    if (entry.completed) {
+      if (entry.timeSpentMinutes === null || entry.timeSpentMinutes === 0) {
+        level = 1
+      } else if (entry.timeSpentMinutes < 15) {
+        level = 2
+      } else if (entry.timeSpentMinutes < 30) {
+        level = 3
+      } else if (entry.timeSpentMinutes < 60) {
+        level = 4
+      } else {
+        level = 5
+      }
+    }
+
+    if (level > 0) {
+      acc[entry.date] = level
+    }
+
+    return acc
+  }, {} as Record<string, number>)
+
   const heatmapTheme = {
     scheme: colorScheme,
     light: {
@@ -106,10 +149,10 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
       </ThemedView>
       <ThemedText>{description}</ThemedText>
       <WeeklyHeatMap
-        data={entries.map(entry => (entry.date))}
+        data={heatmapData}
         theme={heatmapTheme}
         pressable
-        onCellPress={() => handleEdit()}
+        onCellPress={({ date }) => handleEdit(date)}
       />
       <ThemedButton
         title="Log Today"

@@ -10,20 +10,24 @@ import { ThemedNumberInput } from '@/components/themed-number-input'
 import { ThemedButton } from '@/components/themed-button'
 import { entryService } from '@/services/entryServices'
 
-export default function CreateEntryModal() {
+export default function UpdateEntryModal() {
   const { token } = useRequireAuth()
   const router = useRouter()
   const params = useLocalSearchParams<{
-    id: string
+    entryId: string
+    completed: string
+    timeSpentMinutes: string
   }>()
 
-  const [completed, setCompleted] = useState(false)
-  const [timeSpentMinutes, setTimeSpentMinutes] = useState<number | null>(null)
+  const [completed, setCompleted] = useState(params.completed === 'true')
+  const [timeSpentMinutes, setTimeSpentMinutes] = useState<number | null>(
+    params.timeSpentMinutes ? parseInt(params.timeSpentMinutes, 10) : null
+  )
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    if (!params.id) {
-      Alert.alert('Error', 'No id provided')
+    if (!params.entryId) {
+      Alert.alert('Error', 'No entry ID provided')
       router.back()
       return
     }
@@ -32,24 +36,51 @@ export default function CreateEntryModal() {
   const handleUpdate = async () => {
     try {
       setIsLoading(true)
-      await entryService.updateEntry({ id: params.id, token, timeSpentMinutes, completed })
+      await entryService.updateEntry({ 
+        id: params.entryId, 
+        token, 
+        timeSpentMinutes, 
+        completed 
+      })
       router.back()
     } catch (error) {
       console.error('Failed to edit entry:', error)
+      Alert.alert('Error', 'Failed to update entry')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleDelete = async () => {
-    try {
-      setIsLoading(true)
-      await entryService.deleteEntry({ id: params.id, token })
-    } catch (error) {
-      console.log(error)
-    } finally {
-      setIsLoading(false)
-    }
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete Entry',
+      'Are you sure you want to delete this entry?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            const deleteEntry = async () => {
+              try {
+                setIsLoading(true)
+                await entryService.deleteEntry({ id: params.entryId, token })
+                router.back()
+              } catch (error) {
+                console.error('Failed to delete entry:', error)
+                Alert.alert('Error', 'Failed to delete entry')
+              } finally {
+                setIsLoading(false)
+              }
+            }
+            void deleteEntry()
+          }
+        }
+      ]
+    )
   }
 
   return (
