@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native'
+import { StyleSheet, KeyboardAvoidingView, Platform } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 
 import { useRequireAuth } from '@/hooks/use-auth'
@@ -8,6 +8,7 @@ import { ThemedView } from '@/components/themed-view'
 import { ThemedCheckbox } from '@/components/themed-checkbox'
 import { ThemedNumberInput } from '@/components/themed-number-input'
 import { ThemedButton } from '@/components/themed-button'
+import { ThemedAlert } from '@/components/themed-alert'
 import { entryService } from '@/services/entryServices'
 
 export default function UpdateEntryModal() {
@@ -27,7 +28,7 @@ export default function UpdateEntryModal() {
 
   useEffect(() => {
     if (!params.entryId) {
-      Alert.alert('Error', 'No entry ID provided')
+      ThemedAlert.alert('Error', 'No entry ID provided')
       router.back()
       return
     }
@@ -45,14 +46,14 @@ export default function UpdateEntryModal() {
       router.back()
     } catch (error) {
       console.error('Failed to edit entry:', error)
-      Alert.alert('Error', 'Failed to update entry')
+      ThemedAlert.alert('Error', 'Failed to update entry')
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleDelete = () => {
-    Alert.alert(
+    ThemedAlert.alert(
       'Delete Entry',
       'Are you sure you want to delete this entry?',
       [
@@ -71,7 +72,7 @@ export default function UpdateEntryModal() {
                 router.back()
               } catch (error) {
                 console.error('Failed to delete entry:', error)
-                Alert.alert('Error', 'Failed to delete entry')
+                ThemedAlert.alert('Error', 'Failed to delete entry')
               } finally {
                 setIsLoading(false)
               }

@@ -1,4 +1,4 @@
-import { StyleSheet, Alert } from "react-native"
+import { StyleSheet } from "react-native"
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "expo-router"
 import { useFocusEffect } from "@react-navigation/native"
@@ -10,6 +10,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme"
 import { ThemedView } from "./themed-view"
 import { ThemedText } from "./themed-text"
 import { ThemedButton } from "./themed-button"
+import { ThemedAlert } from "./themed-alert"
 import { HabytDropdownMenu } from "./habyt-dropdown-menu"
 
 import type { Habyt, Entry } from '@shared'
@@ -82,10 +83,11 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
         }
       })
     } else {
-      Alert.alert('No entry', 'No entry exists for this date')
+      ThemedAlert.alert('No entry', 'No entry exists for this date')
     }
   }
 
+  // Evaluate another way of assigning heat values
   const heatmapData = entries.reduce((acc, entry) => {
     let level = 0
     if (entry.completed) {

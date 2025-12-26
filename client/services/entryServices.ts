@@ -16,9 +16,9 @@ export const entryService = {
   },
 
   createEntry: async ({ habytId, token, timeSpentMinutes, completed }: EntryCreateRequest) => {
-    const body = { 
-      timeSpentMinutes, 
-      completed 
+    const body = {
+      timeSpentMinutes,
+      completed
     }
 
     const response = await safeFetch(habytEntriesUrl(habytId), {
@@ -32,7 +32,7 @@ export const entryService = {
 
   updateEntry: async ({ id, token, timeSpentMinutes, completed }: EntryUpdateRequest) => {
     const body: Partial<{ timeSpentMinutes: number | null; completed: boolean }> = {}
-    
+
     if (timeSpentMinutes !== undefined)
       body.timeSpentMinutes = timeSpentMinutes
     if (completed !== undefined)
