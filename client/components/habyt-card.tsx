@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native"
+import { StyleSheet, TouchableOpacity } from "react-native"
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "expo-router"
 import { useFocusEffect } from "@react-navigation/native"
@@ -7,11 +7,13 @@ import { WeeklyHeatMap } from "@symbiot.dev/react-native-heatmap"
 import { entryService } from "@/services/entryServices"
 import { useRequireAuth } from "@/hooks/use-auth"
 import { useColorScheme } from "@/hooks/use-color-scheme"
+import { useThemeColor } from "@/hooks/use-theme-color"
 import { ThemedView } from "./themed-view"
 import { ThemedText } from "./themed-text"
 import { ThemedButton } from "./themed-button"
 import { ThemedAlert } from "./themed-alert"
 import { HabytDropdownMenu } from "./habyt-dropdown-menu"
+import { IconSymbol } from "./ui/icon-symbol"
 
 import type { Habyt, Entry } from '@shared'
 
@@ -24,6 +26,7 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
   const { token } = useRequireAuth()
   const router = useRouter()
   const colorScheme = useColorScheme() ?? 'light'
+  const iconColor = useThemeColor({}, 'icon')
   const [entries, setEntries] = useState<Entry[]>([])
 
   const fetchEntries = useCallback(async () => {
@@ -46,6 +49,12 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
       void fetchEntries()
     }, [fetchEntries])
   )
+
+  const getTodayEntry = (): boolean => { // y-m-d format
+    const today = new Date().toISOString().slice(0, 10)
+    const entry = entries.find((e) => e.date == today)
+    return Boolean(entry)
+  }
 
   const menuOptions = [
     ...(onEdit ? [{
@@ -77,7 +86,7 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
       router.push({
         pathname: '/(protected)/update-entry.modal',
         params: {
-          entryId: entry.id,
+          entryId: entry.id.toString(),
           completed: entry.completed.toString(),
           timeSpentMinutes: entry.timeSpentMinutes?.toString() ?? '',
         }
@@ -152,16 +161,28 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
       <ThemedText>{description}</ThemedText>
       <WeeklyHeatMap
         data={heatmapData}
+        cellSize={14}
         theme={heatmapTheme}
         pressable
         onCellPress={({ date }) => handleEdit(date)}
       />
-      <ThemedButton
-        title="Log Today"
-        variant="secondary"
-        onPress={() => handleCreate()}
-      />
-    </ThemedView>
+      {getTodayEntry()
+        ? <ThemedView style={styles.completedContainer}>
+          <ThemedView style={styles.completedTextContainer}>
+            <IconSymbol name="checkmark.square" size={24} color={iconColor} style={styles.completedText} />
+            <ThemedText>Completed</ThemedText>
+          </ThemedView>
+          <TouchableOpacity onPress={() => handleEdit(new Date())}>
+            <IconSymbol name="pencil" size={24} color={iconColor} />
+          </TouchableOpacity>
+        </ThemedView>
+        : <ThemedButton
+          title="Log Today"
+          variant="secondary"
+          onPress={() => handleCreate()}
+        />
+      }
+    </ThemedView >
   )
 }
 
@@ -185,4 +206,18 @@ const styles = StyleSheet.create({
   contentContainer: {
     gap: 4,
   },
+  completedContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderColor: 'grey',
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 5,
+  },
+  completedTextContainer: {
+    flexDirection: 'row',
+  },
+  completedText: {
+    paddingRight: 4,
+  }
 })

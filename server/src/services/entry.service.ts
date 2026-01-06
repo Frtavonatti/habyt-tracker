@@ -5,7 +5,7 @@ import type { EntryCreateData, EntryUpdateBody, Entry as EntryDTO } from "@share
 export const findAll = async (habytId: string): Promise<EntryDTO[]> => {
   return await Entry.findAll({
     where: { habytId },
-    order: [['date', 'DESC']] 
+    order: [['date', 'DESC']]
   })
 }
 
@@ -21,8 +21,8 @@ export const createEntry = async (
   try {
     return await Entry.create({ date, completed, timeSpentMinutes, habytId })
   } catch (error: unknown) {
-      if ((error as { name: string }).name === "SequelizeUniqueConstraintError")
-        throw new AppError('Entry for this date already exists', 409)
+    if ((error as { name: string }).name === "SequelizeUniqueConstraintError")
+      throw new AppError('Entry for this date already exists', 409)
     throw error
   }
 }
@@ -32,7 +32,7 @@ export const updateEntry = async (
 ): Promise<EntryDTO> => {
   const entry = await Entry.findByPk(id)
   if (!entry) throw new NotFoundError('Entry not found')
-  
+
   const updateData: Partial<{ completed: boolean; timeSpentMinutes: number | null }> = {}
   if (updates.completed !== undefined)
     updateData.completed = updates.completed
@@ -43,8 +43,8 @@ export const updateEntry = async (
 }
 
 export const deleteEntry = async (id: string)
-: Promise<void> => {
+  : Promise<void> => {
   const entry = await Entry.findByPk(id)
-  if (!entry) throw new NotFoundError('Entry not found') 
+  if (!entry) throw new NotFoundError('Entry not found')
   return entry.destroy()
 }

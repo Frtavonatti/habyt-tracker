@@ -37,11 +37,11 @@ export default function UpdateEntryModal() {
   const handleUpdate = async () => {
     try {
       setIsLoading(true)
-      await entryService.updateEntry({ 
-        id: params.entryId, 
-        token, 
-        timeSpentMinutes, 
-        completed 
+      await entryService.updateEntry({
+        id: params.entryId,
+        token,
+        timeSpentMinutes,
+        completed
       })
       router.back()
     } catch (error) {

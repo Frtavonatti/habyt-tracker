@@ -39,7 +39,7 @@ export const entryService = {
       body.completed = completed
 
     const response = await safeFetch(entryUrl(id), {
-      method: 'PUT',
+      method: 'PATCH',
       headers: handleHeaders(token, true),
       body: JSON.stringify(body)
     })
