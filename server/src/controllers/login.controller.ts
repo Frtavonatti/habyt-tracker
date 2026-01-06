@@ -14,20 +14,25 @@ export const login = async (
   res: Response
 ) => {
   const { username, password } = loginSchema.parse(req.body)
-  const user = await User.scope('withPassword').findOne({ where: { username } })
+  const user = await User
+    .scope('withPassword')
+    .findOne({ where: { username } })
 
   const passwordCorrect = user
     ? await bcrypt.compare(password, user.passwordHash)
     : false
 
-  if (!passwordCorrect || !user) throw new AppError('Invalid username or password', 401)
+  if (!passwordCorrect || !user) 
+    throw new AppError('Invalid username or password', 401)
 
   const payload: AuthTokenPayload = {
     id: String(user.id),
     username: user.username,
   }
   
-  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' })
+  const token = jwt.sign(payload, JWT_SECRET, {
+    expiresIn: '1h' 
+  })
 
   return res.status(200).send({ 
     token, 

@@ -1,14 +1,25 @@
 import { ActivityIndicator } from 'react-native'
 import { Stack, Redirect } from 'expo-router'
+import { useCallback } from 'react'
 import { useAuth } from '@/hooks/use-auth'
+import { useTokenValidator } from '@/hooks/use-token-validator' 
 
 export default function ProtectedLayout() {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { state, logout } = useAuth()
 
-  if (isLoading)
+  const handleTokenExpired = useCallback(() => {
+    void logout()
+  }, [logout])
+
+  useTokenValidator(
+    state.status === 'authenticated' ? state.token : null,
+    handleTokenExpired
+  )
+
+  if (state.status === 'loading')
     return <ActivityIndicator />
 
-  if (!isAuthenticated)
+  if (state.status === 'unauthenticated')
     return <Redirect href="/(auth)/login" />
 
   return (

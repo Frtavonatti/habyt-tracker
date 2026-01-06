@@ -14,9 +14,18 @@ type IconSymbolName = keyof typeof MAPPING;
  * - see Material Icons in the [Icons Directory](https://icons.expo.fyi).
  * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
  */
+
+
+/* [SF SYMBOL]: [EXPO-MATERIAL SYMBOL] */
 const MAPPING = {
   // 'house.fill': 'home',
   // 'paperplane.fill': 'send',
+  // '': 'filter-list-alt,
+  'heart.fill' : 'favorite',
+  'heart' : 'favorite-border',
+  'ellipsis.vertical.bubble': 'more-vert',
+  'pencil': 'edit',
+  'trash': 'delete-outline',
   'person.circle.fill': 'account-circle',
   'person.fill': 'person',
   'gearshape': 'settings',

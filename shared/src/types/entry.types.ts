@@ -1,7 +1,7 @@
 import type { z } from 'zod'
-import type { 
-  entryCreateSchema, 
-  entryUpdateSchema, 
+import type {
+  entryCreateSchema,
+  entryUpdateSchema,
   entrySchema,
   habytIdParamSchema,
   entryIdParamSchema
@@ -13,12 +13,25 @@ export type Entry = z.infer<typeof entrySchema>
 export type HabytIdParam = z.infer<typeof habytIdParamSchema>
 export type EntryIdParam = z.infer<typeof entryIdParamSchema>
 
-// Services
 export interface EntryCreateData {
-  date: string
+  date: string // YYYY-MM-DD
   completed: boolean
   timeSpentMinutes: number | null
   habytId: string
+}
+
+export interface EntryCreateRequest {
+  habytId: string
+  token: string
+  completed: boolean
+  timeSpentMinutes: number | null
+}
+
+export interface EntryUpdateRequest {
+  id: string
+  token: string
+  completed?: boolean
+  timeSpentMinutes?: number | null
 }
 
 /* Legacy 

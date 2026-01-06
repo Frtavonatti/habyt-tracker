@@ -24,8 +24,8 @@ export const listEntries = async (
 ) => {
   const { habytId } = habytIdParamSchema.parse(req.params)
 
-  const habyt = await findHabytById(habytId)
   const user = await findUserById(req.decodedToken?.id as string)
+  const habyt = await findHabytById(habytId, user.id)
 
   if (user.id !== habyt.userId) 
     throw new ForbiddenError('Forbidden: only the habyt owner can see the entries')
@@ -41,8 +41,8 @@ export const createEntry = async (
   const { habytId } = habytIdParamSchema.parse(req.params)
   const { completed, timeSpentMinutes } = entryCreateSchema.parse(req.body)
 
-  const habyt = await findHabytById(habytId)
   const user = await findUserById(req.decodedToken?.id as string)
+  const habyt = await findHabytById(habytId, user.id)
 
   if (user.id !== habyt.userId) 
     throw new ForbiddenError('Forbidden: only the habyt owner can add new entries')
@@ -67,8 +67,8 @@ export const updateEntry = async (
   const updateData = entryUpdateSchema.parse(req.body)
 
   const entry = await entryService.findEntryById(id)
-  const habyt = await findHabytById(entry.habytId)
   const user = await findUserById(req.decodedToken?.id as string)
+  const habyt = await findHabytById(entry.habytId, user.id)
 
   if (user.id !== habyt.userId)
     throw new ForbiddenError('Forbidden: only the habyt owner can update entries')

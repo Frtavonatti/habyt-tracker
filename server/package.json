@@ -17,9 +17,6 @@
   "license": "MIT",
   "description": "",
   "dependencies": {
-    "@types/express": "^5.0.5",
-    "@types/pg": "^8.15.6",
-    "@types/sequelize": "^4.28.20",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
@@ -32,8 +29,11 @@
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.10.1",
+    "@types/pg": "^8.15.6",
+    "@types/sequelize": "^4.28.20",
     "@types/supertest": "^6.0.3",
     "supertest": "^7.1.4",
     "umzug": "^3.8.2"

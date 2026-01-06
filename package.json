@@ -29,14 +29,15 @@
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose stop postgres",
     "db:destroy": "docker compose down -v postgres",
-    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
-    "dev:all": "concurrently \"npm run db:up\" \"npm run server:dev\" \"npm run client:dev\""
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:start\"",
+    "dev:all": "concurrently \"npm run db:up\" \"npm run server:dev\" \"npm run client:start\""
   },
   "author": "frtavonatti",
   "license": "MIT",
   "description": "This project was built to showcase a full stack habit tracking application using TypeScript, React Native, React, Express, Sequelize, PostgreSQL and Docker.",
   "devDependencies": {
     "@eslint/js": "^9.36.0",
+    "concurrently": "^9.2.1",
     "eslint": "^9.36.0",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.44.1"

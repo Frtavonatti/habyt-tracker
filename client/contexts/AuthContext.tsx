@@ -2,14 +2,18 @@ import { createContext, useState, useEffect } from "react"
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter } from "expo-router"
 import { authService } from "@/services/authService"
+import { isTokenExpired } from "@/hooks/use-token-validator"
 
 import type { ReactNode } from "react"
 import type { LoginBody, UserCreateBody } from "@shared/index"
 
+type AuthState = 
+  | { status: 'loading' }
+  | { status: 'unauthenticated' }
+  | { status: 'authenticated'; token: string }
+
 interface AuthContextType {
-  isAuthenticated: boolean
-  isLoading: boolean
-  token: string | null
+  state: AuthState,
   login: (credential: LoginBody) => Promise<void>
   register: (userdata: UserCreateBody) => Promise<void>
   logout: () => Promise<void>
@@ -19,8 +23,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
-  const [token, setToken] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [state, setState] = useState<AuthState>({ status: 'loading' })
 
   useEffect(()=> {
     void loadToken()
@@ -29,12 +32,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadToken = async () => {
     try {
       const storedToken = await AsyncStorage.getItem('auth_token')
-      if (storedToken)
-        setToken(storedToken)
+      if (storedToken && !isTokenExpired(storedToken)) {
+        setState({ status: 'authenticated', token: storedToken })
+      } else {
+        if (storedToken)
+          await AsyncStorage.removeItem('auth_token')
+        setState({ status: 'unauthenticated' })
+      } 
     } catch (error) {
       console.error('Error loading token:', error)
-    } finally {
-      setIsLoading(false)
+      setState({ status: 'unauthenticated' })
     }
   }
 
@@ -42,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const data = await authService.login({ username, password })
       await AsyncStorage.setItem('auth_token', data.token)
-      setToken(data.token)
+      setState({ status: 'authenticated', token: data.token })
     } catch (error) {
       console.error('Login error:', error)
       throw error
@@ -62,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       await AsyncStorage.removeItem('auth_token')
-      setToken(null)
+      setState({ status: 'unauthenticated' })
       router.push('/(auth)/login')
     } catch (error) {
       console.error('Logout error:', error)
@@ -73,9 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider
       value={{
-        isAuthenticated: !!token,
-        isLoading,
-        token,
+        state,
         login,
         register,
         logout

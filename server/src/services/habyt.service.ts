@@ -1,25 +1,30 @@
 import Habyt from "../models/habyt.js"
 import { ForbiddenError, NotFoundError } from "../utils/errors.js"
 
-import type { 
-  HabytCreateData, 
-  HabytUpdateData, 
+import type {
+  HabytCreateData,
+  HabytUpdateData,
   Habyt as HabytDTO
 } from "@shared/types/habyt.types.js"
 
-export const findAllHabyts = async (): Promise<HabytDTO[]> => {
+/* export const findAllHabyts = async (): Promise<HabytDTO[]> => {
   return await Habyt.findAll()
+} */
+
+export const findUserHabyts = async (id: string) => {
+  return await Habyt.findAll({ where: { userId: id } })
 }
 
-export const findHabytById = async (id: string): Promise<HabytDTO> => {
+export const findHabytById = async (id: string, userId: string): Promise<HabytDTO> => {
   const habyt = await Habyt.findByPk(id)
   if (!habyt) throw new NotFoundError('Habyt not Found')
+  if (habyt.userId !== userId) throw new ForbiddenError('Forbidden')
   return habyt
 }
 
 export const createHabyt = async (
   { title, description, userId }: HabytCreateData
-): Promise<HabytDTO> =>  {
+): Promise<HabytDTO> => {
   return await Habyt.create({ title, description, userId })
 }
 
@@ -27,13 +32,17 @@ export const updateHabyt = async (
   { id, title, description, userId }: HabytUpdateData)
   : Promise<HabytDTO> => {
   const habyt = await Habyt.findByPk(id)
-  
-  if (!habyt) 
+
+  if (!habyt)
     throw new NotFoundError('Habyt not found')
-  if (habyt.userId !== userId) 
+  if (habyt.userId !== userId)
     throw new ForbiddenError('Forbidden')
-  
-  return await habyt.update({ title, description })
+
+  const updates: Partial<{ title: string; description: string | null }> = {}
+  if (title !== undefined) updates.title = title
+  if (description !== undefined) updates.description = description
+
+  return await habyt.update(updates)
 }
 
 export const deleteHabyt = async (
@@ -41,9 +50,9 @@ export const deleteHabyt = async (
 ): Promise<void> => {
   const habyt = await Habyt.findByPk(id)
 
-  if (!habyt) 
+  if (!habyt)
     throw new NotFoundError('Habyt not found')
-  if (habyt.userId !== userId) 
+  if (habyt.userId !== userId)
     throw new ForbiddenError('Forbidden')
 
   await habyt.destroy()

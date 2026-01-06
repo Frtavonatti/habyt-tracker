@@ -1,28 +1,42 @@
-import { useState } from 'react'
-import { StyleSheet, KeyboardAvoidingView, Platform } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useState, useEffect } from 'react'
+import { StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native'
+import { useRouter, useLocalSearchParams } from 'expo-router'
 
 import { useRequireAuth } from '@/hooks/use-auth'
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
-import { ThemedTextInput } from '@/components/themed-text-input'
+import { ThemedCheckbox } from '@/components/themed-checkbox'
+import { ThemedNumberInput } from '@/components/themed-number-input'
 import { ThemedButton } from '@/components/themed-button'
-import { habytService } from '@/services/habytServices'
+import { entryService } from '@/services/entryServices'
 
-export default function CreateHabytModal() {
+export default function CreateEntryModal() {
   const { token } = useRequireAuth()
   const router = useRouter()
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
+  const params = useLocalSearchParams<{
+    habytId: string
+  }>()
+
+  const [completed, setCompleted] = useState(false)
+  const [timeSpentMinutes, setTimeSpentMinutes] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
+  useEffect(() => {
+    if (!params.habytId) {
+      Alert.alert('Error', 'No habyt ID provided')
+      router.back()
+      return
+    }
+  }, [])
+
+  // TO-DO: Update entries after creation
   const handleCreate = async () => {
     try {
       setIsLoading(true)
-      await habytService.createHabyt({ title, description, token })
+      await entryService.createEntry({ habytId: params.habytId, token, timeSpentMinutes, completed })
       router.back()
     } catch (error) {
-      console.error('Failed to create habyt:', error)
+      console.error('Failed to input new entry:', error)
     } finally {
       setIsLoading(false)
     }
@@ -30,29 +44,25 @@ export default function CreateHabytModal() {
 
   return (
     <ThemedView style={styles.container}>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.content}
       >
-        <ThemedText type="title">Create New Habyt</ThemedText>
-        
+        <ThemedText type="title">Input a new entry</ThemedText>
+
         <ThemedView style={styles.form}>
-          <ThemedTextInput
-            label="Title"
-            value={title}
-            onChangeText={setTitle}
-            placeholder="Enter habyt title"
-            autoFocus
+          <ThemedCheckbox
+            label="Mark as completed"
+            checked={completed}
+            onCheckedChange={setCompleted}
           />
-          
-          <ThemedTextInput
-            label="Description"
-            value={description}
-            onChangeText={setDescription}
-            placeholder="Enter description (optional)"
-            multiline
-            numberOfLines={4}
-            style={styles.textArea}
+
+          <ThemedNumberInput
+            label="Time spent (minutes)"
+            value={timeSpentMinutes}
+            onChangeValue={setTimeSpentMinutes}
+            placeholder="Enter time in minutes (optional)"
+            min={0}
           />
         </ThemedView>
 
@@ -68,7 +78,7 @@ export default function CreateHabytModal() {
             title="Create"
             onPress={() => void handleCreate()}
             style={styles.button}
-            disabled={!title.trim() || isLoading}
+            disabled={isLoading}
           />
         </ThemedView>
       </KeyboardAvoidingView>
@@ -87,12 +97,7 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   form: {
-    gap: 16,
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: 'top',
-    paddingTop: 12,
+    gap: 20,
   },
   buttons: {
     flexDirection: 'row',

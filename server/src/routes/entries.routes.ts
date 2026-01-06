@@ -1,11 +1,11 @@
 import { Router } from 'express'
 import { tokenExtractor } from '../middleware/index.js'
-import { 
+import {
   listEntries,
   createEntry,
   updateEntry,
   deleteEntry
- } from '../controllers/entries.controller.js'
+} from '../controllers/entries.controller.js'
 
 const entriesRouter = Router()
 entriesRouter.use(tokenExtractor)
