@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { StyleSheet, FlatList } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
@@ -61,12 +61,12 @@ export default function HomeScreen() {
     }
   }
 
-  const habytsToShow = () => {
+  const filteredHabyts = useMemo(() => {
     if (!search) return habyts
     return habyts.filter(habyt =>
       habyt.title.toLowerCase().includes(search.toLowerCase())
     )
-  }
+  }, [habyts, search])
 
   const SearchHeader = (
     <ThemedView style={[
@@ -90,7 +90,7 @@ export default function HomeScreen() {
   return (
     <ThemedView style={styles.container}>
       <FlatList
-        data={habytsToShow()}
+        data={filteredHabyts}
         renderItem={({ item }) => (
           <HabytCard
             {...item}
