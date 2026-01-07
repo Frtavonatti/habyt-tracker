@@ -12,7 +12,9 @@ import { ThemedView } from "./themed-view"
 import { ThemedText } from "./themed-text"
 import { ThemedButton } from "./themed-button"
 import { ThemedAlert } from "./themed-alert"
+import { UpdateEntryModal } from '@/components/modals/update-entry'
 import { HabytDropdownMenu } from "./habyt-dropdown-menu"
+import { heatmapTheme } from "@/constants/theme"
 import { IconSymbol } from "./ui/icon-symbol"
 
 import type { Habyt, Entry } from '@shared'
@@ -28,6 +30,12 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
   const colorScheme = useColorScheme() ?? 'light'
   const iconColor = useThemeColor({}, 'icon')
   const [entries, setEntries] = useState<Entry[]>([])
+  const [selectedEntry, setSelectedEntry] = useState<{
+    id: string
+    completed: boolean
+    timeSpentMinutes: number | null
+  } | null>(null)
+  const [modalVisible, setModalVisible] = useState(false)
 
   const fetchEntries = useCallback(async () => {
     try {
@@ -78,22 +86,25 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
     })
   }
 
-  const handleEdit = (date: Date) => {
+  const handleEditEntry = (date: Date) => {
     const dateString = date.toISOString().split('T')[0] // Convert to YYYY-MM-DD
     const entry = entries.find(e => e.date === dateString)
 
     if (entry) {
-      router.push({
-        pathname: '/(protected)/update-entry.modal',
-        params: {
-          entryId: entry.id.toString(),
-          completed: entry.completed.toString(),
-          timeSpentMinutes: entry.timeSpentMinutes?.toString() ?? '',
-        }
+      setSelectedEntry({
+        id: entry.id,
+        completed: entry.completed,
+        timeSpentMinutes: entry.timeSpentMinutes
       })
+      setModalVisible(true)
     } else {
       ThemedAlert.alert('No entry', 'No entry exists for this date')
     }
+  }
+
+  const handleModalClose = () => {
+    setModalVisible(false)
+    setSelectedEntry(null)
   }
 
   // Evaluate another way of assigning heat values
@@ -120,69 +131,52 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
     return acc
   }, {} as Record<string, number>)
 
-  const heatmapTheme = {
-    scheme: colorScheme,
-    light: {
-      headerTextColor: '#11181C',
-      cellDefaultColor: '#ebedf0',
-      cellTextColor: '#11181C',
-      cellColor: {
-        1: '#9be9a8',
-        2: '#40c463',
-        3: '#30a14e',
-        4: '#216e39',
-        5: '#216e39',
-      },
-      sidebarTextColor: '#11181C',
-    },
-    dark: {
-      headerTextColor: '#ECEDEE',
-      cellDefaultColor: '#161b22',
-      cellTextColor: '#ECEDEE',
-      cellColor: {
-        1: '#0e4429',
-        2: '#006d32',
-        3: '#26a641',
-        4: '#39d353',
-        5: '#39d353',
-      },
-      sidebarTextColor: '#ECEDEE',
-    },
-  }
-
   return (
-    <ThemedView style={[styles.habytContainer, { borderColor: iconColor }]}>
-      <ThemedView style={styles.headerContainer}>
-        <ThemedText type="subtitle" style={styles.title}>{title}</ThemedText>
-        {menuOptions.length > 0 && (
-          <HabytDropdownMenu options={menuOptions} />
-        )}
-      </ThemedView>
-      <ThemedText>{description}</ThemedText>
-      <WeeklyHeatMap
-        data={heatmapData}
-        cellSize={14}
-        theme={heatmapTheme}
-        pressable
-        onCellPress={({ date }) => handleEdit(date)}
-      />
-      {getTodayEntry()
-        ? <ThemedView style={[styles.completedContainer, { borderColor: iconColor }]}>
-          <ThemedView style={styles.completedTextContainer}>
-            <IconSymbol name="checkmark.square" size={24} color={iconColor} style={styles.completedText} />
-            <ThemedText>Completed</ThemedText>
-          </ThemedView>
-          <TouchableOpacity onPress={() => handleEdit(new Date())}>
-            <IconSymbol name="pencil" size={24} color={iconColor} />
-          </TouchableOpacity>
+    <>
+      <ThemedView style={[styles.habytContainer, { borderColor: iconColor }]}>
+        <ThemedView style={styles.headerContainer}>
+          <ThemedText type="subtitle" style={styles.title}>{title}</ThemedText>
+          {menuOptions.length > 0 && (
+            <HabytDropdownMenu options={menuOptions} />
+          )}
         </ThemedView>
-        : <ThemedButton
-          title="Log Today"
-          variant="secondary"
-          onPress={() => handleCreate()}
+        <ThemedText>{description}</ThemedText>
+        <WeeklyHeatMap
+          data={heatmapData}
+          cellSize={14}
+          theme={{ ...heatmapTheme, scheme: colorScheme }}
+          pressable
+          onCellPress={({ date }) => handleEditEntry(date)}
+        />
+        {getTodayEntry()
+          ? <ThemedView style={[styles.completedContainer, { borderColor: iconColor }]}>
+            <ThemedView style={styles.completedTextContainer}>
+              <IconSymbol name="checkmark.square" size={24} color={iconColor} style={styles.completedText} />
+              <ThemedText>Completed</ThemedText>
+            </ThemedView>
+            <TouchableOpacity onPress={() => handleEditEntry(new Date())}>
+              <IconSymbol name="pencil" size={24} color={iconColor} />
+            </TouchableOpacity>
+          </ThemedView>
+          : <ThemedButton
+            title="Log Today"
+            variant="secondary"
+            onPress={() => handleCreate()}
+          />
+        }
+      </ThemedView >
+
+      {selectedEntry &&
+        <UpdateEntryModal
+          visible={modalVisible}
+          onClose={handleModalClose}
+          entryId={selectedEntry.id}
+          initialCompleted={selectedEntry.completed}
+          initialTimeSpentMinutes={selectedEntry.timeSpentMinutes}
+          token={token}
         />
       }
-    </ThemedView >
+    </>
   )
 }
 
