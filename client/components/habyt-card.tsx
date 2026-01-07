@@ -151,7 +151,7 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
   }
 
   return (
-    <ThemedView style={styles.habytContainer}>
+    <ThemedView style={[styles.habytContainer, { borderColor: iconColor }]}>
       <ThemedView style={styles.headerContainer}>
         <ThemedText type="subtitle" style={styles.title}>{title}</ThemedText>
         {menuOptions.length > 0 && (
@@ -167,7 +167,7 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
         onCellPress={({ date }) => handleEdit(date)}
       />
       {getTodayEntry()
-        ? <ThemedView style={styles.completedContainer}>
+        ? <ThemedView style={[styles.completedContainer, { borderColor: iconColor }]}>
           <ThemedView style={styles.completedTextContainer}>
             <IconSymbol name="checkmark.square" size={24} color={iconColor} style={styles.completedText} />
             <ThemedText>Completed</ThemedText>
@@ -192,7 +192,6 @@ const styles = StyleSheet.create({
     gap: 12,
     borderWidth: 1,
     borderRadius: '5px',
-    borderColor: 'white',
     padding: 16,
   },
   headerContainer: {
@@ -209,7 +208,6 @@ const styles = StyleSheet.create({
   completedContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    borderColor: 'grey',
     borderWidth: 1,
     borderRadius: 5,
     padding: 5,

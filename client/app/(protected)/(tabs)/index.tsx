@@ -16,6 +16,7 @@ import type { Habyt } from '@shared/types/habyt.types'
 export default function HomeScreen() {
   const { token } = useRequireAuth()
   const [habyts, setHabyts] = useState<Habyt[]>([])
+  const [search, setSearch] = useState("")
   const insets = useSafeAreaInsets()
   const backgroundColor = useThemeColor({}, 'background')
   const router = useRouter()
@@ -60,7 +61,14 @@ export default function HomeScreen() {
     }
   }
 
-  const SearchHeader = () => (
+  const habytsToShow = () => {
+    if (!search) return habyts
+    return habyts.filter(habyt =>
+      habyt.title.toLowerCase().includes(search.toLowerCase())
+    )
+  }
+
+  const SearchHeader = (
     <ThemedView style={[
       styles.searchBar,
       { paddingTop: insets.top + 16 }
@@ -68,6 +76,8 @@ export default function HomeScreen() {
       <ThemedTextInput
         style={styles.searchInput}
         placeholder="Search habyts..."
+        value={search}
+        onChangeText={(text) => { setSearch(text) }}
       />
       <ThemedButton
         title="+"
@@ -80,7 +90,7 @@ export default function HomeScreen() {
   return (
     <ThemedView style={styles.container}>
       <FlatList
-        data={habyts}
+        data={habytsToShow()}
         renderItem={({ item }) => (
           <HabytCard
             {...item}
