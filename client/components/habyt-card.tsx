@@ -8,6 +8,7 @@ import { entryService } from "@/services/entryServices"
 import { useRequireAuth } from "@/hooks/use-auth"
 import { useColorScheme } from "@/hooks/use-color-scheme"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { HabytStats } from "./habyt-stats"
 import { ThemedView } from "./themed-view"
 import { ThemedText } from "./themed-text"
 import { ThemedButton } from "./themed-button"
@@ -131,6 +132,7 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
     return acc
   }, {} as Record<string, number>)
 
+
   return (
     <>
       <ThemedView style={[styles.habytContainer, { borderColor: iconColor }]}>
@@ -164,6 +166,7 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
             onPress={() => handleCreate()}
           />
         }
+        <HabytStats entries={entries} />
       </ThemedView >
 
       {selectedEntry &&
