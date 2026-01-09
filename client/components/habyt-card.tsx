@@ -1,6 +1,5 @@
 import { StyleSheet, TouchableOpacity } from "react-native"
 import { useEffect, useState, useCallback } from "react"
-import { useRouter } from "expo-router"
 import { useFocusEffect } from "@react-navigation/native"
 import { WeeklyHeatMap } from "@symbiot.dev/react-native-heatmap"
 
@@ -13,6 +12,7 @@ import { ThemedView } from "./themed-view"
 import { ThemedText } from "./themed-text"
 import { ThemedButton } from "./themed-button"
 import { ThemedAlert } from "./themed-alert"
+import { CreateEntryModal } from "./modals/create-entry"
 import { UpdateEntryModal } from '@/components/modals/update-entry'
 import { HabytDropdownMenu } from "./habyt-dropdown-menu"
 import { heatmapTheme } from "@/constants/theme"
@@ -27,7 +27,6 @@ interface HabytCardProps extends Habyt {
 
 export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCardProps) {
   const { token } = useRequireAuth()
-  const router = useRouter()
   const colorScheme = useColorScheme() ?? 'light'
   const iconColor = useThemeColor({}, 'icon')
   const [entries, setEntries] = useState<Entry[]>([])
@@ -36,7 +35,9 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
     completed: boolean
     timeSpentMinutes: number | null
   } | null>(null)
-  const [modalVisible, setModalVisible] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [updateVisible, setUpdateVisible] = useState(false)
+  const [createVisible, setCreateVisible] = useState(false)
 
   const fetchEntries = useCallback(async () => {
     try {
@@ -80,16 +81,29 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
     }] : []),
   ]
 
-  const handleCreate = () => {
-    router.push({
-      pathname: '/(protected)/create-entry-modal',
-      params: { habytId: id }
-    })
+  const findEntry = (date = new Date()) => {
+    const dateString = date.toISOString().split('T')[0] // Convert to YYYY-MM-DD
+    const entry = entries.find(e => e.date === dateString)
+    if (!entry) return null
+    return entry
+  }
+
+  const handleCreate = (date?: Date) => {
+    const targetDate = date ?? new Date()
+    const dateString = targetDate.toISOString().split('T')[0] // Convert to YYYY-MM-DD
+
+    const existingEntry = findEntry(targetDate)
+    if (existingEntry) {
+      ThemedAlert.alert('Entry exists', 'An entry already exists for this date. You can edit it instead')
+      return
+    }
+
+    setSelectedDate(dateString)
+    setCreateVisible(true)
   }
 
   const handleEditEntry = (date: Date) => {
-    const dateString = date.toISOString().split('T')[0] // Convert to YYYY-MM-DD
-    const entry = entries.find(e => e.date === dateString)
+    const entry = findEntry(date)
 
     if (entry) {
       setSelectedEntry({
@@ -97,15 +111,22 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
         completed: entry.completed,
         timeSpentMinutes: entry.timeSpentMinutes
       })
-      setModalVisible(true)
+      setUpdateVisible(true)
     } else {
       ThemedAlert.alert('No entry', 'No entry exists for this date')
     }
   }
 
-  const handleModalClose = () => {
-    setModalVisible(false)
-    setSelectedEntry(null)
+  const handleModalClose = async (type: "create" | "update") => {
+    if (type == "create") {
+      setCreateVisible(false)
+      setSelectedDate(null)
+    } else if (type == "update") {
+      setUpdateVisible(false)
+      setSelectedEntry(null)
+    }
+
+    await fetchEntries()
   }
 
   // Evaluate another way of assigning heat values
@@ -132,6 +153,10 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
     return acc
   }, {} as Record<string, number>)
 
+  const today = new Date()
+  const yearInMilisecs = 365 * 24 * 60 * 60 * 1000
+  const timeStamp = today.getTime() - yearInMilisecs
+  const prevYear = new Date(timeStamp)
 
   return (
     <>
@@ -145,10 +170,15 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
         <ThemedText>{description}</ThemedText>
         <WeeklyHeatMap
           data={heatmapData}
+          endDate={today}
+          startDate={prevYear}
           cellSize={14}
           theme={{ ...heatmapTheme, scheme: colorScheme }}
           pressable
-          onCellPress={({ date }) => handleEditEntry(date)}
+          onCellPress={({ date }) => findEntry(date)
+            ? handleEditEntry(date)
+            : handleCreate(date)
+          }
         />
         {getTodayEntry()
           ? <ThemedView style={[styles.completedContainer, { borderColor: iconColor }]}>
@@ -169,10 +199,18 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
         <HabytStats entries={entries} />
       </ThemedView >
 
+      <CreateEntryModal
+        visible={createVisible}
+        onClose={() => handleModalClose("create")}
+        habytId={id}
+        date={selectedDate}
+        token={token}
+      />
+
       {selectedEntry &&
         <UpdateEntryModal
-          visible={modalVisible}
-          onClose={handleModalClose}
+          visible={updateVisible}
+          onClose={() => handleModalClose("update")}
           entryId={selectedEntry.id}
           initialCompleted={selectedEntry.completed}
           initialTimeSpentMinutes={selectedEntry.timeSpentMinutes}
