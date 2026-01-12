@@ -1,15 +1,12 @@
 import { useState, useCallback, useMemo } from 'react'
-import { StyleSheet, FlatList } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { StyleSheet } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
 
 import { useRequireAuth } from '@/hooks/use-auth'
 import { habytService } from '@/services/habytServices'
-import { useThemeColor } from '@/hooks/use-theme-color'
-import { HabytCard } from '@/components/habyt-card'
+import { HabytList } from '@/components/habyt-list'
+import { SearchHeader } from '@/components/search-bar'
 import { ThemedView } from '@/components/themed-view'
-import { ThemedTextInput } from '@/components/themed-text-input'
-import { ThemedButton } from '@/components/themed-button'
 
 import type { Habyt } from '@shared/types/habyt.types'
 
@@ -17,8 +14,6 @@ export default function HomeScreen() {
   const { token } = useRequireAuth()
   const [habyts, setHabyts] = useState<Habyt[]>([])
   const [search, setSearch] = useState("")
-  const insets = useSafeAreaInsets()
-  const backgroundColor = useThemeColor({}, 'background')
   const router = useRouter()
 
   useFocusEffect(
@@ -34,7 +29,7 @@ export default function HomeScreen() {
       }
       void fetchHabyts()
       return () => { isActive = false }
-    }, [])
+    }, [token])
   )
 
   const createHabyt = () => {
@@ -68,41 +63,19 @@ export default function HomeScreen() {
     )
   }, [habyts, search])
 
-  const SearchHeader = (
-    <ThemedView style={[
-      styles.searchBar,
-      { paddingTop: insets.top + 16 }
-    ]}>
-      <ThemedTextInput
-        style={styles.searchInput}
-        placeholder="Search habyts..."
-        value={search}
-        onChangeText={(text) => { setSearch(text) }}
-      />
-      <ThemedButton
-        title="+"
-        size="medium"
-        onPress={createHabyt}
-      />
-    </ThemedView>
-  )
 
   return (
     <ThemedView style={styles.container}>
-      <FlatList
+      <HabytList
         data={filteredHabyts}
-        renderItem={({ item }) => (
-          <HabytCard
-            {...item}
-            onEdit={() => handleEdit(item)}
-            onDelete={() => void handleDelete(item)}
-          />
-        )}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={SearchHeader}
-        contentContainerStyle={styles.listContent}
-        style={{ backgroundColor }}
-        showsVerticalScrollIndicator={false}
+        handleEdit={handleEdit}
+        handleDelete={handleDelete}
+        searchHeader={<SearchHeader
+          handleCreate={createHabyt}
+          search={search}
+          setSearch={setSearch}
+        />}
+        editableEntries={true}
       />
     </ThemedView>
   )
@@ -121,8 +94,5 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-  },
-  listContent: {
-    gap: 16,
   },
 })

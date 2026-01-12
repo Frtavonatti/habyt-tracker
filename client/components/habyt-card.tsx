@@ -23,9 +23,10 @@ import type { Habyt, Entry } from '@shared'
 interface HabytCardProps extends Habyt {
   onEdit?: () => void
   onDelete?: () => void
+  editableEntries?: boolean
 }
 
-export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCardProps) {
+export function HabytCard({ id, title, description, onEdit, onDelete, editableEntries = false }: HabytCardProps) {
   const { token } = useRequireAuth()
   const colorScheme = useColorScheme() ?? 'light'
   const iconColor = useThemeColor({}, 'icon')
@@ -89,6 +90,7 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
   }
 
   const handleCreate = (date?: Date) => {
+    if (!editableEntries) return
     const targetDate = date ?? new Date()
     const dateString = targetDate.toISOString().split('T')[0] // Convert to YYYY-MM-DD
 
@@ -103,6 +105,7 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
   }
 
   const handleEditEntry = (date: Date) => {
+    if (!editableEntries) return
     const entry = findEntry(date)
 
     if (entry) {
@@ -117,7 +120,7 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
     }
   }
 
-  const handleModalClose = async (type: "create" | "update") => {
+  const handleModalClose = async (type: "create" | "update"): Promise<void> => {
     if (type == "create") {
       setCreateVisible(false)
       setSelectedDate(null)
@@ -163,7 +166,7 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
       <ThemedView style={[styles.habytContainer, { borderColor: iconColor }]}>
         <ThemedView style={styles.headerContainer}>
           <ThemedText type="subtitle" style={styles.title}>{title}</ThemedText>
-          {menuOptions.length > 0 && (
+          {editableEntries && menuOptions.length > 0 && (
             <HabytDropdownMenu options={menuOptions} />
           )}
         </ThemedView>
@@ -175,10 +178,11 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
           cellSize={14}
           theme={{ ...heatmapTheme, scheme: colorScheme }}
           pressable
-          onCellPress={({ date }) => findEntry(date)
-            ? handleEditEntry(date)
-            : handleCreate(date)
-          }
+          onCellPress={editableEntries ? ({ date }) => {
+            const entry = findEntry(date)
+            if (entry) handleEditEntry(date)
+            else handleCreate(date)
+          } : undefined}
         />
         {getTodayEntry()
           ? <ThemedView style={[styles.completedContainer, { borderColor: iconColor }]}>
@@ -186,28 +190,34 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
               <IconSymbol name="checkmark.square" size={24} color={iconColor} style={styles.completedText} />
               <ThemedText>Completed</ThemedText>
             </ThemedView>
+            (editableEntries &&
             <TouchableOpacity onPress={() => handleEditEntry(new Date())}>
               <IconSymbol name="pencil" size={24} color={iconColor} />
             </TouchableOpacity>
+            )
           </ThemedView>
-          : <ThemedButton
-            title="Log Today"
-            variant="secondary"
-            onPress={() => handleCreate()}
-          />
+          : (editableEntries &&
+            <ThemedButton
+              title="Log Today"
+              variant="secondary"
+              onPress={() => handleCreate()}
+            />
+          )
         }
         <HabytStats entries={entries} />
       </ThemedView >
 
-      <CreateEntryModal
-        visible={createVisible}
-        onClose={() => handleModalClose("create")}
-        habytId={id}
-        date={selectedDate}
-        token={token}
-      />
+      {editableEntries &&
+        <CreateEntryModal
+          visible={createVisible}
+          onClose={() => handleModalClose("create")}
+          habytId={id}
+          date={selectedDate}
+          token={token}
+        />
+      }
 
-      {selectedEntry &&
+      {editableEntries && selectedEntry &&
         <UpdateEntryModal
           visible={updateVisible}
           onClose={() => handleModalClose("update")}
@@ -226,7 +236,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     gap: 12,
     borderWidth: 1,
-    borderRadius: '5px',
+    borderRadius: 5,
     padding: 16,
   },
   headerContainer: {

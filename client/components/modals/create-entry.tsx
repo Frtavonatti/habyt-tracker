@@ -11,7 +11,7 @@ import { entryService } from '@/services/entryServices'
 
 interface CreateEntryModalProps {
   visible: boolean
-  onClose: () => void
+  onClose: () => Promise<void>
   habytId: string
   token: string
   date: string | null

@@ -11,7 +11,7 @@ import { entryService } from '@/services/entryServices'
 
 interface UpdateEntryModalProps {
   visible: boolean
-  onClose: () => void
+  onClose: () => Promise<void>
   entryId: string
   initialCompleted: boolean
   initialTimeSpentMinutes: number | null
