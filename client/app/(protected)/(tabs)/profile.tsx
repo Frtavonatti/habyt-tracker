@@ -26,7 +26,7 @@ export default function TabTwoScreen() {
       }
     }
     void fetchHabyts()
-  }, [])
+  }, [token])
 
   return (
     <ParallaxScrollView>

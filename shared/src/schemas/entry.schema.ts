@@ -4,7 +4,7 @@ import { z } from "zod"
 export const entryCreateSchema = z.object({
   completed: z.boolean().optional().default(false),
   timeSpentMinutes: z.number().int().nonnegative('Time spent must be non-negative').nullable().optional().default(null),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format').optional().nullable().default(null),
 })
 
 export const entryUpdateSchema = z.object({

@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity } from "react-native"
+import { StyleSheet } from "react-native"
 import { useEffect, useState, useCallback } from "react"
 import { useFocusEffect } from "@react-navigation/native"
 import { WeeklyHeatMap } from "@symbiot.dev/react-native-heatmap"
@@ -7,16 +7,15 @@ import { entryService } from "@/services/entryServices"
 import { useRequireAuth } from "@/hooks/use-auth"
 import { useColorScheme } from "@/hooks/use-color-scheme"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { HabytHeader } from "./habyt-header"
+import { HabytActions } from "./habyt-actions"
 import { HabytStats } from "./habyt-stats"
 import { ThemedView } from "./themed-view"
 import { ThemedText } from "./themed-text"
-import { ThemedButton } from "./themed-button"
 import { ThemedAlert } from "./themed-alert"
 import { CreateEntryModal } from "./modals/create-entry"
-import { UpdateEntryModal } from '@/components/modals/update-entry'
-import { HabytDropdownMenu } from "./habyt-dropdown-menu"
+import { UpdateEntryModal } from './modals/update-entry'
 import { heatmapTheme } from "@/constants/theme"
-import { IconSymbol } from "./ui/icon-symbol"
 
 import type { Habyt, Entry } from '@shared'
 
@@ -25,6 +24,13 @@ interface HabytCardProps extends Habyt {
   onDelete?: () => void
   editableEntries?: boolean
 }
+
+/* CONSTANTS */
+const today = new Date()
+const yearInMilisecs = 365 * 24 * 60 * 60 * 1000
+const timeStamp = today.getTime() - yearInMilisecs
+const prevYear = new Date(timeStamp)
+
 
 export function HabytCard({ id, title, description, onEdit, onDelete, editableEntries = false }: HabytCardProps) {
   const { token } = useRequireAuth()
@@ -67,26 +73,9 @@ export function HabytCard({ id, title, description, onEdit, onDelete, editableEn
     return Boolean(entry)
   }
 
-  const menuOptions = [
-    ...(onEdit ? [{
-      label: 'Edit',
-      icon: 'pencil' as const,
-      onPress: onEdit,
-      variant: 'default' as const,
-    }] : []),
-    ...(onDelete ? [{
-      label: 'Delete',
-      icon: 'trash' as const,
-      onPress: onDelete,
-      variant: 'danger' as const,
-    }] : []),
-  ]
-
   const findEntry = (date = new Date()) => {
     const dateString = date.toISOString().split('T')[0] // Convert to YYYY-MM-DD
-    const entry = entries.find(e => e.date === dateString)
-    if (!entry) return null
-    return entry
+    return entries.find(e => e.date === dateString)
   }
 
   const handleCreate = (date?: Date) => {
@@ -120,6 +109,13 @@ export function HabytCard({ id, title, description, onEdit, onDelete, editableEn
     }
   }
 
+  const handleCellPress = (date: Date) => {
+    if (!editableEntries) return
+    const entry = findEntry(date)
+    if (entry) handleEditEntry(date)
+    else handleCreate(date)
+  }
+
   const handleModalClose = async (type: "create" | "update"): Promise<void> => {
     if (type == "create") {
       setCreateVisible(false)
@@ -132,7 +128,6 @@ export function HabytCard({ id, title, description, onEdit, onDelete, editableEn
     await fetchEntries()
   }
 
-  // Evaluate another way of assigning heat values
   const heatmapData = entries.reduce((acc, entry) => {
     let level = 0
     if (entry.completed) {
@@ -156,20 +151,15 @@ export function HabytCard({ id, title, description, onEdit, onDelete, editableEn
     return acc
   }, {} as Record<string, number>)
 
-  const today = new Date()
-  const yearInMilisecs = 365 * 24 * 60 * 60 * 1000
-  const timeStamp = today.getTime() - yearInMilisecs
-  const prevYear = new Date(timeStamp)
-
   return (
     <>
       <ThemedView style={[styles.habytContainer, { borderColor: iconColor }]}>
-        <ThemedView style={styles.headerContainer}>
-          <ThemedText type="subtitle" style={styles.title}>{title}</ThemedText>
-          {editableEntries && menuOptions.length > 0 && (
-            <HabytDropdownMenu options={menuOptions} />
-          )}
-        </ThemedView>
+        <HabytHeader
+          title={title}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          editable={editableEntries}
+        />
         <ThemedText>{description}</ThemedText>
         <WeeklyHeatMap
           data={heatmapData}
@@ -178,32 +168,14 @@ export function HabytCard({ id, title, description, onEdit, onDelete, editableEn
           cellSize={14}
           theme={{ ...heatmapTheme, scheme: colorScheme }}
           pressable
-          onCellPress={editableEntries ? ({ date }) => {
-            const entry = findEntry(date)
-            if (entry) handleEditEntry(date)
-            else handleCreate(date)
-          } : undefined}
+          onCellPress={({ date }) => handleCellPress(date)}
         />
-        {getTodayEntry()
-          ? <ThemedView style={[styles.completedContainer, { borderColor: iconColor }]}>
-            <ThemedView style={styles.completedTextContainer}>
-              <IconSymbol name="checkmark.square" size={24} color={iconColor} style={styles.completedText} />
-              <ThemedText>Completed</ThemedText>
-            </ThemedView>
-            (editableEntries &&
-            <TouchableOpacity onPress={() => handleEditEntry(new Date())}>
-              <IconSymbol name="pencil" size={24} color={iconColor} />
-            </TouchableOpacity>
-            )
-          </ThemedView>
-          : (editableEntries &&
-            <ThemedButton
-              title="Log Today"
-              variant="secondary"
-              onPress={() => handleCreate()}
-            />
-          )
-        }
+        <HabytActions
+          completed={getTodayEntry()}
+          editable={editableEntries}
+          onCreate={handleCreate}
+          onEdit={onEdit}
+        />
         <HabytStats entries={entries} />
       </ThemedView >
 
@@ -239,28 +211,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 16,
   },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  title: {
-    flex: 1,
-  },
   contentContainer: {
     gap: 4,
   },
-  completedContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderRadius: 5,
-    padding: 5,
-  },
-  completedTextContainer: {
-    flexDirection: 'row',
-  },
-  completedText: {
-    paddingRight: 4,
-  }
 })
