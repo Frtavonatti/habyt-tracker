@@ -1,17 +1,14 @@
-import { Modal, StyleSheet, Pressable, ViewStyle } from 'react-native'
+import { Modal, StyleSheet, Pressable, type ViewStyle } from 'react-native'
 import { ThemedView } from './themed-view'
-// import { useThemeColor } from '@/hooks/use-theme-color'
 
 interface ThemedModalProps {
   visible: boolean
-  onClose: () => Promise<void>
+  onClose: () => void
   children: React.ReactNode
   style?: ViewStyle
 }
 
 export function ThemedModal({ visible, onClose, children, style }: ThemedModalProps) {
-  // const overlayColor = useThemeColor({}, 'background')
-
   return (
     <Modal
       visible={visible}

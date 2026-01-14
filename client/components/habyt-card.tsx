@@ -167,22 +167,23 @@ export function HabytCard({ id, title, description, onEdit, onDelete, editableEn
           startDate={prevYear}
           cellSize={14}
           theme={{ ...heatmapTheme, scheme: colorScheme }}
-          pressable
+          pressable={editableEntries}
           onCellPress={({ date }) => handleCellPress(date)}
         />
-        <HabytActions
-          completed={getTodayEntry()}
-          editable={editableEntries}
-          onCreate={handleCreate}
-          onEdit={onEdit}
-        />
+        {editableEntries &&
+          <HabytActions
+            completed={getTodayEntry()}
+            onCreate={() => { void handleCreate }}
+            onEdit={handleEditEntry}
+          />
+        }
         <HabytStats entries={entries} />
       </ThemedView >
 
       {editableEntries &&
         <CreateEntryModal
           visible={createVisible}
-          onClose={() => handleModalClose("create")}
+          onClose={() => void handleModalClose("create")}
           habytId={id}
           date={selectedDate}
           token={token}
@@ -192,7 +193,7 @@ export function HabytCard({ id, title, description, onEdit, onDelete, editableEn
       {editableEntries && selectedEntry &&
         <UpdateEntryModal
           visible={updateVisible}
-          onClose={() => handleModalClose("update")}
+          onClose={() => void handleModalClose("update")}
           entryId={selectedEntry.id}
           initialCompleted={selectedEntry.completed}
           initialTimeSpentMinutes={selectedEntry.timeSpentMinutes}

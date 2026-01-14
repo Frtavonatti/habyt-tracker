@@ -8,18 +8,17 @@ import { IconSymbol } from "./ui/icon-symbol"
 
 interface HabytActionsProps {
   completed: boolean
-  editable?: boolean
   onCreate?: () => void
   onEdit?: (date: Date) => void
 }
 
-export const HabytActions = ({ onCreate, onEdit, completed, editable = false }: HabytActionsProps) => {
+export const HabytActions = ({ onCreate, onEdit, completed }: HabytActionsProps) => {
   const iconColor = useThemeColor({}, "icon")
 
   return (
     <>
-      {completed && editable &&
-        < ThemedView style={[styles.completedContainer, { borderColor: iconColor }]}>
+      {completed ?
+        (< ThemedView style={[styles.completedContainer, { borderColor: iconColor }]}>
           <ThemedView style={styles.completedTextContainer}>
             <IconSymbol name="checkmark.square" size={24} color={iconColor} style={styles.completedText} />
             <ThemedText>Completed</ThemedText>
@@ -28,14 +27,13 @@ export const HabytActions = ({ onCreate, onEdit, completed, editable = false }: 
             <IconSymbol name="pencil" size={24} color={iconColor} />
           </TouchableOpacity>
         </ThemedView >
-      }
-
-      {editable && !completed &&
-        < ThemedButton
-          title="Log Today"
-          variant="secondary"
-          onPress={() => onCreate?.()}
-        />
+        ) : (
+          < ThemedButton
+            title="Log Today"
+            variant="secondary"
+            onPress={() => onCreate?.()}
+          />
+        )
       }
     </>
   )

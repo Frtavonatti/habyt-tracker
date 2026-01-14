@@ -11,7 +11,7 @@ import { entryService } from '@/services/entryServices'
 
 interface CreateEntryModalProps {
   visible: boolean
-  onClose: () => Promise<void>
+  onClose: () => void
   habytId: string
   token: string
   date: string | null
@@ -80,7 +80,7 @@ export function CreateEntryModal({
         />
         <ThemedButton
           title="Submit"
-          onPress={handleCreate}
+          onPress={() => { void handleCreate() }}
           style={styles.button}
           disabled={isLoading}
         />

@@ -1,8 +1,9 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { StyleSheet } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
 
 import { useRequireAuth } from '@/hooks/use-auth'
+import { useFetchHabyts } from '@/use-fetch-habyts'
 import { habytService } from '@/services/habytServices'
 import { HabytList } from '@/components/habyt-list'
 import { SearchHeader } from '@/components/search-bar'
@@ -12,24 +13,15 @@ import type { Habyt } from '@shared/types/habyt.types'
 
 export default function HomeScreen() {
   const { token } = useRequireAuth()
-  const [habyts, setHabyts] = useState<Habyt[]>([])
+  const { habyts, setHabyts, refetch } = useFetchHabyts(token)
   const [search, setSearch] = useState("")
   const router = useRouter()
 
   useFocusEffect(
-    useCallback(() => {
-      let isActive = true
-      async function fetchHabyts() {
-        try {
-          const response = await habytService.fetchUserHabyts(token)
-          if (isActive) setHabyts(response)
-        } catch (error) {
-          console.error('Failed to fetch habyts:', error)
-        }
-      }
-      void fetchHabyts()
-      return () => { isActive = false }
-    }, [token])
+    // refetch habyts every time the tab gains focus
+    () => {
+      void refetch()
+    }
   )
 
   const createHabyt = () => {
@@ -50,6 +42,7 @@ export default function HomeScreen() {
   const handleDelete = async (habyt: Habyt) => {
     try {
       await habytService.deleteHabyt({ id: habyt.id, token })
+      await refetch()
       setHabyts(prev => prev.filter(h => h.id !== habyt.id))
     } catch (error) {
       console.log(error)
@@ -62,7 +55,6 @@ export default function HomeScreen() {
       habyt.title.toLowerCase().includes(search.toLowerCase())
     )
   }, [habyts, search])
-
 
   return (
     <ThemedView style={styles.container}>

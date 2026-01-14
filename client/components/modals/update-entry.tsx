@@ -11,7 +11,7 @@ import { entryService } from '@/services/entryServices'
 
 interface UpdateEntryModalProps {
   visible: boolean
-  onClose: () => Promise<void>
+  onClose: () => void
   entryId: string
   initialCompleted: boolean
   initialTimeSpentMinutes: number | null
@@ -60,17 +60,19 @@ export function UpdateEntryModal({
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              setIsLoading(true)
-              await entryService.deleteEntry({ id: entryId, token })
-              onClose()
-            } catch (error) {
-              console.error('Failed to delete entry:', error)
-              ThemedAlert.alert('Error', 'Failed to delete entry')
-            } finally {
-              setIsLoading(false)
-            }
+          onPress: () => {
+            void (async () => {
+              try {
+                setIsLoading(true)
+                await entryService.deleteEntry({ id: entryId, token })
+                onClose()
+              } catch (error) {
+                console.error('Failed to delete entry:', error)
+                ThemedAlert.alert('Error', 'Failed to delete entry')
+              } finally {
+                setIsLoading(false)
+              }
+            })()
           }
         }
       ]
@@ -114,7 +116,7 @@ export function UpdateEntryModal({
         />
         <ThemedButton
           title="Submit"
-          onPress={handleUpdate}
+          onPress={() => { void handleUpdate() }}
           style={styles.button}
           disabled={isLoading}
         />
