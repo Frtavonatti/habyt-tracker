@@ -8,7 +8,7 @@ export const entryCreateSchema = z.object({
 })
 
 export const entryUpdateSchema = z.object({
-  completed: z.boolean().optional().default(false),
+  completed: z.boolean().optional(),
   timeSpentMinutes: z.number().int().nonnegative('Time spent must be non-negative').nullable().optional()
 }).refine(
   (data) => data.completed !== undefined || data.timeSpentMinutes !== undefined,
