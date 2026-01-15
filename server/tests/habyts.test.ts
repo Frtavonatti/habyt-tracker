@@ -59,14 +59,18 @@ beforeEach(async () => {
 
 describe("GET /api/habyts", () => {
   test("return all habyts", async () => {
-    const response = await api.get("/api/habyts").expect(200)
+    const response = await api.get("/api/habyts")
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200)
     const habyts = response.body as HabytResponse[]
     assert.strictEqual(Array.isArray(habyts), true)
     assert.strictEqual(habyts.length, 3)
   })
 
   test("/:id returns a habyt by id", async () => {
-    const response = await api.get(`/api/habyts/${habyt!.id}`).expect(200)
+    const response = await api.get(`/api/habyts/${habyt!.id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200)
     const body = response.body as HabytResponse
     assert.strictEqual(body.title, habytList[0]!.title)
   })
@@ -74,7 +78,7 @@ describe("GET /api/habyts", () => {
 
 describe("POST /api/habyts", () => {
   test("creates a new habyt with valid data and token", async () => {
-    const newHabyt = { title: "Yoga", description: "Practice yoga daily"}
+    const newHabyt = { title: "Yoga", description: "Practice yoga daily" }
     const response = await api.post("/api/habyts")
       .set("Authorization", `Bearer ${token}`)
       .send(newHabyt)
