@@ -43,7 +43,6 @@ export default function HomeScreen() {
     try {
       await habytService.deleteHabyt({ id: habyt.id, token })
       await refetch()
-      setHabyts(prev => prev.filter(h => h.id !== habyt.id))
     } catch (error) {
       console.log(error)
     }
