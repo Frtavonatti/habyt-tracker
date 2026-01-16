@@ -117,10 +117,10 @@ export function HabytCard({ id, title, description, onEdit, onDelete, editableEn
   }
 
   const handleModalClose = async (type: "create" | "update"): Promise<void> => {
-    if (type == "create") {
+    if (type === "create") {
       setCreateVisible(false)
       setSelectedDate(null)
-    } else if (type == "update") {
+    } else if (type === "update") {
       setUpdateVisible(false)
       setSelectedEntry(null)
     }
