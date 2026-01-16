@@ -40,8 +40,6 @@ export const createEntry = async (
   await assertHabytOwnership(habytId, userId)
 
   const date = parsedDate ?? toDateOnlyUTC(new Date())
-  if (typeof date !== 'string')
-    throw new BadRequestError('Invalid date format')
 
   const newEntry = await entryService.createEntry({
     date,
