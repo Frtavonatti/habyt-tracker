@@ -212,7 +212,4 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 16,
   },
-  contentContainer: {
-    gap: 4,
-  },
 })
