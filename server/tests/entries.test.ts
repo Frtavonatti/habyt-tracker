@@ -31,6 +31,22 @@ const loginAndGetToken = async () => {
   return (loginResponse.body as LoginResponse).token
 }
 
+const createAnotherUser = async () => {
+  const anotherUser = {
+    username: `testuser-${Date.now()}`,
+    name: "Another User",
+    email: `another-${Date.now()}@mail.com`,
+    password: "password123"
+  }
+  await api.post('/api/users').send(anotherUser).expect(201)
+  
+  const loginResponse = await api.post('/api/login')
+    .send({ username: anotherUser.username, password: anotherUser.password })
+    .expect(200)
+  
+  return (loginResponse.body as LoginResponse).token
+}
+
 let user: User, habyt: Habyt, token: string
 
 beforeEach(async () => {
@@ -64,6 +80,16 @@ describe("GET /habyts/:habytId/entries", () => {
   test("fails with a 401 if token is missing", async () => {
     await api.get(`/api/habyts/${habyt?.id}/entries`).expect(401)
   })
+
+  test("fails with 403 if user is not the habyt owner", async () => {
+    const anotherToken = await createAnotherUser()
+
+    const response = await api.get(`/api/habyts/${habyt?.id}/entries`)
+      .set('Authorization', `Bearer ${anotherToken}`)
+      .expect(403)
+    
+    assert.strictEqual(response.body.error, "Forbidden")
+  })
 })
 
 describe("POST /habyts/:habytId/entries", () => {
@@ -83,12 +109,63 @@ describe("POST /habyts/:habytId/entries", () => {
     assert.strictEqual(createdEntry.timeSpentMinutes, newEntry.timeSpentMinutes)
   })
 
-  test("fails with 400 if timeSpentMinutes is negative", async () => {
-    const newEntry = { timeSpentMinutes: -1 }
-    await api.post(`/api/habyts/${habyt?.id}/entries`)
+  test("creates a new entry with retroactive date", async () => {
+    const retroactiveDate = toDateOnlyUTC(new Date("2025-01-15"))
+    const newEntry = {
+      completed: true,
+      timeSpentMinutes: 60,
+      date: retroactiveDate
+    }
+
+    const response = await api.post(`/api/habyts/${habyt?.id}/entries`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(newEntry)
+      .expect(201)
+    
+    const createdEntry = response.body as EntryBase
+    assert.strictEqual(createdEntry.completed, newEntry.completed)
+    assert.strictEqual(createdEntry.timeSpentMinutes, newEntry.timeSpentMinutes)
+    assert.strictEqual(createdEntry.date, retroactiveDate)
+  })
+
+  test("creates entry with today's date when date is not provided", async () => {
+    const newEntry = {
+      completed: false,
+      timeSpentMinutes: 45
+    }
+
+    const response = await api.post(`/api/habyts/${habyt?.id}/entries`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(newEntry)
+      .expect(201)
+    
+    const createdEntry = response.body as EntryBase
+    const today = toDateOnlyUTC(new Date())
+    assert.strictEqual(createdEntry.date, today)
+  })
+
+  test("fails with 400 if date format is invalid", async () => {
+    const newEntry = {
+      completed: true,
+      date: "invalid-date-format"
+    }
+    
+    const response = await api.post(`/api/habyts/${habyt?.id}/entries`)
       .set("Authorization", `Bearer ${token}`)
       .send(newEntry)
       .expect(400)
+    
+    assert.strictEqual(response.body.error, "Validation failed")
+  })
+
+  test("fails with 400 if timeSpentMinutes is negative", async () => {
+    const newEntry = { timeSpentMinutes: -1 }
+    const response = await api.post(`/api/habyts/${habyt?.id}/entries`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(newEntry)
+      .expect(400)
+    
+    assert.strictEqual(response.body.error, "Validation failed")
   })
 
   test("fails with 409 if there is already an entry for the entry date", async () => {
@@ -102,10 +179,56 @@ describe("POST /habyts/:habytId/entries", () => {
       .send(entries[0])
       .expect(201)
     
-    await api.post(`/api/habyts/${habyt?.id}/entries`)
+    const response = await api.post(`/api/habyts/${habyt?.id}/entries`)
       .set("Authorization", `Bearer ${token}`)
       .send(entries[1])
       .expect(409)
+    
+    assert.strictEqual(response.body.error, "Entry for this date already exists")
+  })
+
+  test("fails with 409 when trying to create duplicate retroactive entry", async () => {
+    const retroactiveDate = toDateOnlyUTC(new Date("2025-03-10"))
+    const entry1 = {
+      completed: true,
+      timeSpentMinutes: 30,
+      date: retroactiveDate
+    }
+    const entry2 = {
+      completed: false,
+      date: retroactiveDate
+    }
+
+    await api.post(`/api/habyts/${habyt?.id}/entries`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(entry1)
+      .expect(201)
+    
+    const response = await api.post(`/api/habyts/${habyt?.id}/entries`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(entry2)
+      .expect(409)
+    
+    assert.strictEqual(response.body.error, "Entry for this date already exists")
+  })
+
+  test("fails with 401 if token is missing", async () => {
+    const newEntry = { completed: true }
+    await api.post(`/api/habyts/${habyt?.id}/entries`)
+      .send(newEntry)
+      .expect(401)
+  })
+
+  test("fails with 403 if user is not the habyt owner", async () => {
+    const anotherToken = await createAnotherUser()
+
+    const newEntry = { completed: true }
+    const response = await api.post(`/api/habyts/${habyt?.id}/entries`)
+      .set("Authorization", `Bearer ${anotherToken}`)
+      .send(newEntry)
+      .expect(403)
+    
+    assert.strictEqual(response.body.error, "Forbidden")
   })
 })
 
@@ -133,9 +256,24 @@ describe("PATCH /entries/:id", () => {
 
   test('fails with 404 with invalid entryId', async ()=> {
     const updateEntryData = { timeSpentMinutes: 120 }
-    await api.patch(`/api/entries/${nonExistentId}`)
-      .send({ completed: updateEntryData.timeSpentMinutes })
-      .expect(401)
+    const response = await api.patch(`/api/entries/${nonExistentId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ timeSpentMinutes: updateEntryData.timeSpentMinutes })
+      .expect(404)
+    
+    assert.strictEqual(response.body.error, "Entry not found")
+  })
+
+  test('fails with 403 if user is not the habyt owner', async () => {
+    const entry = await Entry.findOne({ where: { timeSpentMinutes: initialEntry.timeSpentMinutes } })
+    const anotherToken = await createAnotherUser()
+
+    const response = await api.patch(`/api/entries/${entry?.id}`)
+      .set("Authorization", `Bearer ${anotherToken}`)
+      .send({ completed: false })
+      .expect(403)
+    
+    assert.strictEqual(response.body.error, "Forbidden")
   })
 })
 
@@ -152,7 +290,7 @@ describe("DELETE /entries/:id", () => {
     assert.strictEqual(entriesAfter.length, entriesBefore.length - 1)
   })
 
-  test('deletes fail with 401 if invalid token', async () => {
+  test('fails with 401 if token is missing', async () => {
     const entry = await Entry.findOne({ where: { timeSpentMinutes: initialEntry.timeSpentMinutes } })
     const entriesBefore = await Entry.findAll({ where: { habytId: habyt?.id } })
     await api.delete(`/api/entries/${entry?.id}`).expect(401)
@@ -160,15 +298,31 @@ describe("DELETE /entries/:id", () => {
     assert.strictEqual(entriesAfter.length, entriesBefore.length)
   })
 
-  test('deletes fail with 404 if invalid params',async () => {
+  test('fails with 404 if entry does not exist', async () => {
     const habyt = await Habyt.findOne({ where: { title: initialHabyt.title } })
     const entriesBefore = await Entry.findAll({ where: { habytId: habyt?.id } })
     
-    await api.delete(`/api/entries/${nonExistentId}`)
+    const response = await api.delete(`/api/entries/${nonExistentId}`)
       .set("Authorization", `Bearer ${token}`)
       .expect(404)
 
+    assert.strictEqual(response.body.error, "Entry not found")
+
     const entriesAfter = await Entry.findAll({ where: { habytId: habyt?.id } })
     assert.strictEqual(entriesAfter.length, entriesBefore.length)
+  })
+
+  test('fails with 403 if user is not the habyt owner', async () => {
+    const entry = await Entry.findOne({ where: { timeSpentMinutes: initialEntry.timeSpentMinutes } })
+    const anotherToken = await createAnotherUser()
+
+    const response = await api.delete(`/api/entries/${entry?.id}`)
+      .set("Authorization", `Bearer ${anotherToken}`)
+      .expect(403)
+
+    assert.strictEqual(response.body.error, "Forbidden")
+
+    const entryAfterDelete = await Entry.findByPk(entry?.id)
+    assert.ok(entryAfterDelete)
   })
 })

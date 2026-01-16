@@ -33,6 +33,22 @@ const loginAndGetToken = async () => {
   return (loginResponse.body as LoginResponse).token
 }
 
+const createAnotherUser = async () => {
+  const anotherUser = {
+    username: `testuser-${Date.now()}`,
+    name: "Another User",
+    email: `another-${Date.now()}@mail.com`,
+    password: "password123"
+  }
+  await api.post('/api/users').send(anotherUser).expect(201)
+  
+  const loginResponse = await api.post('/api/login')
+    .send({ username: anotherUser.username, password: anotherUser.password })
+    .expect(200)
+  
+  return (loginResponse.body as LoginResponse).token
+}
+
 let user: User; let habyt: Habyt | null; let token: string
 
 beforeEach(async () => {
@@ -58,21 +74,43 @@ beforeEach(async () => {
 })
 
 describe("GET /api/habyts", () => {
-  test("return all habyts", async () => {
-    const response = await api.get("/api/habyts")
-      .set("Authorization", `Bearer ${token}`)
-      .expect(200)
-    const habyts = response.body as HabytResponse[]
-    assert.strictEqual(Array.isArray(habyts), true)
-    assert.strictEqual(habyts.length, 3)
+  describe("List all user habyts", () => {
+    test("returns all user habyts with valid token", async () => {
+      const response = await api.get("/api/habyts")
+        .set("Authorization", `Bearer ${token}`)
+        .expect(200)
+      const habyts = response.body as HabytResponse[]
+      assert.strictEqual(Array.isArray(habyts), true)
+      assert.strictEqual(habyts.length, 3)
+    })
+
+    test("fails with 401 if token is missing", async () => {
+      await api.get("/api/habyts").expect(401)
+    })
   })
 
-  test("/:id returns a habyt by id", async () => {
-    const response = await api.get(`/api/habyts/${habyt!.id}`)
-      .set("Authorization", `Bearer ${token}`)
-      .expect(200)
-    const body = response.body as HabytResponse
-    assert.strictEqual(body.title, habytList[0]!.title)
+  describe("Get habyt by id", () => {
+    test("returns a habyt by id with valid token", async () => {
+      const response = await api.get(`/api/habyts/${habyt!.id}`)
+        .set("Authorization", `Bearer ${token}`)
+        .expect(200)
+      const body = response.body as HabytResponse
+      assert.strictEqual(body.title, habytList[0]!.title)
+    })
+
+    test("fails with 401 if token is missing", async () => {
+      await api.get(`/api/habyts/${habyt!.id}`).expect(401)
+    })
+
+    test("fails with 403 if user is not the habyt owner", async () => {
+      const anotherToken = await createAnotherUser()
+
+      const response = await api.get(`/api/habyts/${habyt!.id}`)
+        .set("Authorization", `Bearer ${anotherToken}`)
+        .expect(403)
+      
+      assert.strictEqual(response.body.error, "Forbidden")
+    })
   })
 })
 
@@ -96,10 +134,12 @@ describe("POST /api/habyts", () => {
 
   test("fails with 400 if title is missing", async () => {
     const newHabyt = { description: "No title provided" }
-    await api.post("/api/habyts")
+    const response = await api.post("/api/habyts")
       .set("Authorization", `Bearer ${token}`)
       .send(newHabyt)
       .expect(400)
+    
+    assert.strictEqual(response.body.error, "Validation failed")
   })
 
   test("fails with 401 if token is missing", async () => {
@@ -126,10 +166,12 @@ describe("PUT /api/habyts/:id", () => {
 
   test("fails with 404 if habyt does not exist", async () => {
     const updatedData = { title: "Non-existent", description: "This habyt does not exist" }
-    await api.put(`/api/habyts/${nonExistentId}`)
+    const response = await api.put(`/api/habyts/${nonExistentId}`)
       .set("Authorization", `Bearer ${token}`)
       .send(updatedData)
       .expect(404)
+    
+    assert.strictEqual(response.body.error, "Habyt not found")
   })
 
   test("fails with 401 if token is missing", async () => {
@@ -138,6 +180,19 @@ describe("PUT /api/habyts/:id", () => {
     await api.put(`/api/habyts/${habyt.id}`)
       .send(updatedData)
       .expect(401)
+  })
+
+  test("fails with 403 if user is not the habyt owner", async () => {
+    assert(habyt, "Habyt to update should exist")
+    const anotherToken = await createAnotherUser()
+
+    const updatedData = { title: "Unauthorized Update", description: "Should fail" }
+    const response = await api.put(`/api/habyts/${habyt.id}`)
+      .set("Authorization", `Bearer ${anotherToken}`)
+      .send(updatedData)
+      .expect(403)
+    
+    assert.strictEqual(response.body.error, "Forbidden")
   })
 })
 
@@ -157,14 +212,30 @@ describe("DELETE /api/habyts/:id", () => {
   })
 
   test("fails with 404 if habyt does not exist", async () => {
-    await api.delete(`/api/habyts/${nonExistentId}`)
+    const response = await api.delete(`/api/habyts/${nonExistentId}`)
       .set("Authorization", `Bearer ${token}`)
       .expect(404)
+    
+    assert.strictEqual(response.body.error, "Habyt not found")
   })
 
   test("fails with 401 if token is missing", async () => {
     assert(habyt, "Habyt to delete should exist")
     await api.delete(`/api/habyts/${habyt.id}`)
       .expect(401)
+  })
+
+  test("fails with 403 if user is not the habyt owner", async () => {
+    assert(habyt, "Habyt to delete should exist")
+    const anotherToken = await createAnotherUser()
+
+    const response = await api.delete(`/api/habyts/${habyt.id}`)
+      .set("Authorization", `Bearer ${anotherToken}`)
+      .expect(403)
+
+    assert.strictEqual(response.body.error, "Forbidden")
+
+    const habytAfterAttempt = await Habyt.findByPk(habyt.id)
+    assert.ok(habytAfterAttempt, "Habyt should still exist after failed delete")
   })
 })

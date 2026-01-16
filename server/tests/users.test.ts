@@ -61,7 +61,7 @@ describe('GET /api/users', () => {
     assert.strictEqual(body.username, initialUser.username)
   })
 
-  test('GET /api/users/:id (UUID inexistente) retorna 404', async () => {
+  test('GET /api/users/:id (UUID inexistente) returns 404', async () => {
     const response = await api.get(`/api/users/${nonexistentId}`).expect(404)
     const body = response.body as ErrorBody
     assert.strictEqual(body.error, 'User not found')
@@ -150,34 +150,34 @@ describe('PUT /api/users/:username', () => {
 describe('DELETE /api/users/:id', () => {
   test('deletes a user by id', async () => {
     await api
-    .delete(`/api/users/${user!.id}`)
-    .set('Authorization', `Bearer ${token}`)
-    .expect(204)
+      .delete(`/api/users/${user!.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(204)
     const userAfterDelete = await User.findByPk(user!.id)
     assert.strictEqual(userAfterDelete, null)
   })
 
   test('deletes a user by username', async () => {
     await api
-    .delete(`/api/users/username/${initialUser.username}`)
-    .set('Authorization', `Bearer ${token}`)
-    .expect(204)
+      .delete(`/api/users/username/${initialUser.username}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(204)
     const userAfterDelete = await User.findOne({ where: { username: initialUser.username } })
     assert.strictEqual(userAfterDelete, null)
   })
 
   test('fails to delete non-existent user', async () => {
     const response = await api
-    .delete(`/api/users/${nonexistentId}`)
-    .set('Authorization', `Bearer ${token}`)
-    .expect(404)
+      .delete(`/api/users/${nonexistentId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(404)
     const body = response.body as ErrorBody
     assert.strictEqual(body.error, 'User not found')
 
     const responseByUsername = await api
-    .delete('/api/users/username/nonexistentuser')
-    .set('Authorization', `Bearer ${token}`)
-    .expect(404)
+      .delete('/api/users/username/nonexistentuser')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(404)
     const bodyByUsername = responseByUsername.body as ErrorBody
     assert.strictEqual(bodyByUsername.error, 'User not found')
   })
@@ -193,9 +193,9 @@ describe('DELETE /api/users/:id', () => {
     const userToDelete = await User.findOne({ where: { username: anotherUser.username } })
 
     const response = await api
-    .delete(`/api/users/${userToDelete!.id}`)
-    .set('Authorization', `Bearer ${token}`)
-    .expect(403)
+      .delete(`/api/users/${userToDelete!.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(403)
     const body = response.body as ErrorBody
     assert.strictEqual(body.error, 'forbidden')
   })
