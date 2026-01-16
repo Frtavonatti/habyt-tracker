@@ -15,10 +15,11 @@ export const entryService = {
     return await handleResponse<Entry[]>(response)
   },
 
-  createEntry: async ({ habytId, token, timeSpentMinutes, completed }: EntryCreateRequest) => {
+  createEntry: async ({ habytId, token, date, timeSpentMinutes, completed }: EntryCreateRequest) => {
     const body = {
       timeSpentMinutes,
-      completed
+      completed,
+      date
     }
 
     const response = await safeFetch(habytEntriesUrl(habytId), {

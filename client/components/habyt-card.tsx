@@ -1,6 +1,5 @@
-import { StyleSheet, TouchableOpacity } from "react-native"
+import { StyleSheet } from "react-native"
 import { useEffect, useState, useCallback } from "react"
-import { useRouter } from "expo-router"
 import { useFocusEffect } from "@react-navigation/native"
 import { WeeklyHeatMap } from "@symbiot.dev/react-native-heatmap"
 
@@ -8,26 +7,44 @@ import { entryService } from "@/services/entryServices"
 import { useRequireAuth } from "@/hooks/use-auth"
 import { useColorScheme } from "@/hooks/use-color-scheme"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { HabytHeader } from "./habyt-header"
+import { HabytActions } from "./habyt-actions"
+import { HabytStats } from "./habyt-stats"
 import { ThemedView } from "./themed-view"
 import { ThemedText } from "./themed-text"
-import { ThemedButton } from "./themed-button"
 import { ThemedAlert } from "./themed-alert"
-import { HabytDropdownMenu } from "./habyt-dropdown-menu"
-import { IconSymbol } from "./ui/icon-symbol"
+import { CreateEntryModal } from "./modals/create-entry"
+import { UpdateEntryModal } from './modals/update-entry'
+import { heatmapTheme } from "@/constants/theme"
 
 import type { Habyt, Entry } from '@shared'
 
 interface HabytCardProps extends Habyt {
   onEdit?: () => void
   onDelete?: () => void
+  editableEntries?: boolean
 }
 
-export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCardProps) {
+/* CONSTANTS */
+const today = new Date()
+const yearInMilisecs = 365 * 24 * 60 * 60 * 1000
+const timeStamp = today.getTime() - yearInMilisecs
+const prevYear = new Date(timeStamp)
+
+
+export function HabytCard({ id, title, description, onEdit, onDelete, editableEntries = false }: HabytCardProps) {
   const { token } = useRequireAuth()
-  const router = useRouter()
   const colorScheme = useColorScheme() ?? 'light'
   const iconColor = useThemeColor({}, 'icon')
   const [entries, setEntries] = useState<Entry[]>([])
+  const [selectedEntry, setSelectedEntry] = useState<{
+    id: string
+    completed: boolean
+    timeSpentMinutes: number | null
+  } | null>(null)
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [updateVisible, setUpdateVisible] = useState(false)
+  const [createVisible, setCreateVisible] = useState(false)
 
   const fetchEntries = useCallback(async () => {
     try {
@@ -56,47 +73,61 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
     return Boolean(entry)
   }
 
-  const menuOptions = [
-    ...(onEdit ? [{
-      label: 'Edit',
-      icon: 'pencil' as const,
-      onPress: onEdit,
-      variant: 'default' as const,
-    }] : []),
-    ...(onDelete ? [{
-      label: 'Delete',
-      icon: 'trash' as const,
-      onPress: onDelete,
-      variant: 'danger' as const,
-    }] : []),
-  ]
-
-  const handleCreate = () => {
-    router.push({
-      pathname: '/(protected)/create-entry-modal',
-      params: { habytId: id }
-    })
+  const findEntry = (date = new Date()) => {
+    const dateString = date.toISOString().split('T')[0] // Convert to YYYY-MM-DD
+    return entries.find(e => e.date === dateString)
   }
 
-  const handleEdit = (date: Date) => {
-    const dateString = date.toISOString().split('T')[0] // Convert to YYYY-MM-DD
-    const entry = entries.find(e => e.date === dateString)
+  const handleCreate = (date?: Date) => {
+    if (!editableEntries) return
+    const targetDate = date ?? new Date()
+    const dateString = targetDate.toISOString().split('T')[0] // Convert to YYYY-MM-DD
+
+    const existingEntry = findEntry(targetDate)
+    if (existingEntry) {
+      ThemedAlert.alert('Entry exists', 'An entry already exists for this date. You can edit it instead')
+      return
+    }
+
+    setSelectedDate(dateString)
+    setCreateVisible(true)
+  }
+
+  const handleEditEntry = (date: Date) => {
+    if (!editableEntries) return
+    const entry = findEntry(date)
 
     if (entry) {
-      router.push({
-        pathname: '/(protected)/update-entry.modal',
-        params: {
-          entryId: entry.id.toString(),
-          completed: entry.completed.toString(),
-          timeSpentMinutes: entry.timeSpentMinutes?.toString() ?? '',
-        }
+      setSelectedEntry({
+        id: entry.id,
+        completed: entry.completed,
+        timeSpentMinutes: entry.timeSpentMinutes
       })
+      setUpdateVisible(true)
     } else {
       ThemedAlert.alert('No entry', 'No entry exists for this date')
     }
   }
 
-  // Evaluate another way of assigning heat values
+  const handleCellPress = (date: Date) => {
+    if (!editableEntries) return
+    const entry = findEntry(date)
+    if (entry) handleEditEntry(date)
+    else handleCreate(date)
+  }
+
+  const handleModalClose = async (type: "create" | "update"): Promise<void> => {
+    if (type === "create") {
+      setCreateVisible(false)
+      setSelectedDate(null)
+    } else if (type === "update") {
+      setUpdateVisible(false)
+      setSelectedEntry(null)
+    }
+
+    await fetchEntries()
+  }
+
   const heatmapData = entries.reduce((acc, entry) => {
     let level = 0
     if (entry.completed) {
@@ -120,69 +151,56 @@ export function HabytCard({ id, title, description, onEdit, onDelete }: HabytCar
     return acc
   }, {} as Record<string, number>)
 
-  const heatmapTheme = {
-    scheme: colorScheme,
-    light: {
-      headerTextColor: '#11181C',
-      cellDefaultColor: '#ebedf0',
-      cellTextColor: '#11181C',
-      cellColor: {
-        1: '#9be9a8',
-        2: '#40c463',
-        3: '#30a14e',
-        4: '#216e39',
-        5: '#216e39',
-      },
-      sidebarTextColor: '#11181C',
-    },
-    dark: {
-      headerTextColor: '#ECEDEE',
-      cellDefaultColor: '#161b22',
-      cellTextColor: '#ECEDEE',
-      cellColor: {
-        1: '#0e4429',
-        2: '#006d32',
-        3: '#26a641',
-        4: '#39d353',
-        5: '#39d353',
-      },
-      sidebarTextColor: '#ECEDEE',
-    },
-  }
-
   return (
-    <ThemedView style={styles.habytContainer}>
-      <ThemedView style={styles.headerContainer}>
-        <ThemedText type="subtitle" style={styles.title}>{title}</ThemedText>
-        {menuOptions.length > 0 && (
-          <HabytDropdownMenu options={menuOptions} />
-        )}
-      </ThemedView>
-      <ThemedText>{description}</ThemedText>
-      <WeeklyHeatMap
-        data={heatmapData}
-        cellSize={14}
-        theme={heatmapTheme}
-        pressable
-        onCellPress={({ date }) => handleEdit(date)}
-      />
-      {getTodayEntry()
-        ? <ThemedView style={styles.completedContainer}>
-          <ThemedView style={styles.completedTextContainer}>
-            <IconSymbol name="checkmark.square" size={24} color={iconColor} style={styles.completedText} />
-            <ThemedText>Completed</ThemedText>
-          </ThemedView>
-          <TouchableOpacity onPress={() => handleEdit(new Date())}>
-            <IconSymbol name="pencil" size={24} color={iconColor} />
-          </TouchableOpacity>
-        </ThemedView>
-        : <ThemedButton
-          title="Log Today"
-          variant="secondary"
-          onPress={() => handleCreate()}
+    <>
+      <ThemedView style={[styles.habytContainer, { borderColor: iconColor }]}>
+        <HabytHeader
+          title={title}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          editable={editableEntries}
+        />
+        <ThemedText>{description}</ThemedText>
+        <WeeklyHeatMap
+          data={heatmapData}
+          endDate={today}
+          startDate={prevYear}
+          cellSize={14}
+          theme={{ ...heatmapTheme, scheme: colorScheme }}
+          pressable={editableEntries}
+          onCellPress={({ date }) => handleCellPress(date)}
+        />
+        {editableEntries &&
+          <HabytActions
+            completed={getTodayEntry()}
+            onCreate={() => { void handleCreate() }}
+            onEdit={handleEditEntry}
+          />
+        }
+        <HabytStats entries={entries} />
+      </ThemedView >
+
+      {editableEntries &&
+        <CreateEntryModal
+          visible={createVisible}
+          onClose={() => void handleModalClose("create")}
+          habytId={id}
+          date={selectedDate}
+          token={token}
         />
       }
-    </ThemedView >
+
+      {editableEntries && selectedEntry &&
+        <UpdateEntryModal
+          visible={updateVisible}
+          onClose={() => void handleModalClose("update")}
+          entryId={selectedEntry.id}
+          initialCompleted={selectedEntry.completed}
+          initialTimeSpentMinutes={selectedEntry.timeSpentMinutes}
+          token={token}
+        />
+      }
+    </>
   )
 }
 
@@ -191,33 +209,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     gap: 12,
     borderWidth: 1,
-    borderRadius: '5px',
-    borderColor: 'white',
+    borderRadius: 5,
     padding: 16,
   },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  title: {
-    flex: 1,
-  },
-  contentContainer: {
-    gap: 4,
-  },
-  completedContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderColor: 'grey',
-    borderWidth: 1,
-    borderRadius: 5,
-    padding: 5,
-  },
-  completedTextContainer: {
-    flexDirection: 'row',
-  },
-  completedText: {
-    paddingRight: 4,
-  }
 })

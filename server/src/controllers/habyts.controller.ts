@@ -18,7 +18,7 @@ export const getUserHabyts = async (req: Request, res: Response) => {
 
 export const getHabyt = async (req: Request<{ id: string }>, res: Response) => {
   const user = await findUserById(req.decodedToken?.id as string)
-  const habyt = await habytService.findHabytById(user.id, req.params.id)
+  const habyt = await habytService.findHabytById(req.params.id, user.id)
   return res.json(habyt)
 }
 

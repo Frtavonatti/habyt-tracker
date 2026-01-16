@@ -46,3 +46,33 @@ export const Fonts = Platform.select({
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 })
+
+export const heatmapTheme = {
+  // scheme: colorScheme,
+  light: {
+    headerTextColor: '#11181C',
+    cellDefaultColor: '#ebedf0',
+    cellTextColor: '#11181C',
+    cellColor: {
+      1: '#9be9a8',
+      2: '#40c463',
+      3: '#30a14e',
+      4: '#216e39',
+      5: '#216e39',
+    },
+    sidebarTextColor: '#11181C',
+  },
+  dark: {
+    headerTextColor: '#ECEDEE',
+    cellDefaultColor: '#161b22',
+    cellTextColor: '#ECEDEE',
+    cellColor: {
+      1: '#0e4429',
+      2: '#006d32',
+      3: '#26a641',
+      4: '#39d353',
+      5: '#39d353',
+    },
+    sidebarTextColor: '#ECEDEE',
+  },
+}

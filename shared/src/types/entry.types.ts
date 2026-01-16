@@ -21,10 +21,11 @@ export interface EntryCreateData {
 }
 
 export interface EntryCreateRequest {
-  habytId: string
   token: string
+  date: string | null // YYYY-MM-DD
   completed: boolean
   timeSpentMinutes: number | null
+  habytId: string
 }
 
 export interface EntryUpdateRequest {

@@ -18,13 +18,12 @@ export const findEntryById = async (id: string): Promise<EntryDTO> => {
 export const createEntry = async (
   { date, completed = false, timeSpentMinutes = null, habytId }: EntryCreateData
 ): Promise<EntryDTO> => {
-  try {
-    return await Entry.create({ date, completed, timeSpentMinutes, habytId })
-  } catch (error: unknown) {
-    if ((error as { name: string }).name === "SequelizeUniqueConstraintError")
-      throw new AppError('Entry for this date already exists', 409)
-    throw error
-  }
+  const existingEntry = await Entry.findOne({ where: { habytId, date } })
+
+  if (existingEntry)
+    throw new AppError('Entry for this date already exists', 409)
+
+  return await Entry.create({ date, completed, timeSpentMinutes, habytId })
 }
 
 export const updateEntry = async (

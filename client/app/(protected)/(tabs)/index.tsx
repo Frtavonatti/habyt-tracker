@@ -1,39 +1,27 @@
-import { useState, useCallback } from 'react'
-import { StyleSheet, FlatList } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useState, useMemo } from 'react'
+import { StyleSheet } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
 
 import { useRequireAuth } from '@/hooks/use-auth'
+import { useFetchHabyts } from '@/use-fetch-habyts'
 import { habytService } from '@/services/habytServices'
-import { useThemeColor } from '@/hooks/use-theme-color'
-import { HabytCard } from '@/components/habyt-card'
+import { HabytList } from '@/components/habyt-list'
+import { SearchHeader } from '@/components/search-bar'
 import { ThemedView } from '@/components/themed-view'
-import { ThemedTextInput } from '@/components/themed-text-input'
-import { ThemedButton } from '@/components/themed-button'
 
 import type { Habyt } from '@shared/types/habyt.types'
 
 export default function HomeScreen() {
   const { token } = useRequireAuth()
-  const [habyts, setHabyts] = useState<Habyt[]>([])
-  const insets = useSafeAreaInsets()
-  const backgroundColor = useThemeColor({}, 'background')
+  const { habyts, setHabyts, refetch } = useFetchHabyts(token)
+  const [search, setSearch] = useState("")
   const router = useRouter()
 
   useFocusEffect(
-    useCallback(() => {
-      let isActive = true
-      async function fetchHabyts() {
-        try {
-          const response = await habytService.fetchUserHabyts(token)
-          if (isActive) setHabyts(response)
-        } catch (error) {
-          console.error('Failed to fetch habyts:', error)
-        }
-      }
-      void fetchHabyts()
-      return () => { isActive = false }
-    }, [])
+    // refetch habyts every time the tab gains focus
+    () => {
+      void refetch()
+    }
   )
 
   const createHabyt = () => {
@@ -54,45 +42,31 @@ export default function HomeScreen() {
   const handleDelete = async (habyt: Habyt) => {
     try {
       await habytService.deleteHabyt({ id: habyt.id, token })
-      setHabyts(prev => prev.filter(h => h.id !== habyt.id))
+      await refetch()
     } catch (error) {
       console.log(error)
     }
   }
 
-  const SearchHeader = () => (
-    <ThemedView style={[
-      styles.searchBar,
-      { paddingTop: insets.top + 16 }
-    ]}>
-      <ThemedTextInput
-        style={styles.searchInput}
-        placeholder="Search habyts..."
-      />
-      <ThemedButton
-        title="+"
-        size="medium"
-        onPress={createHabyt}
-      />
-    </ThemedView>
-  )
+  const filteredHabyts = useMemo(() => {
+    if (!search) return habyts
+    return habyts.filter(habyt =>
+      habyt.title.toLowerCase().includes(search.toLowerCase())
+    )
+  }, [habyts, search])
 
   return (
     <ThemedView style={styles.container}>
-      <FlatList
-        data={habyts}
-        renderItem={({ item }) => (
-          <HabytCard
-            {...item}
-            onEdit={() => handleEdit(item)}
-            onDelete={() => void handleDelete(item)}
-          />
-        )}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={SearchHeader}
-        contentContainerStyle={styles.listContent}
-        style={{ backgroundColor }}
-        showsVerticalScrollIndicator={false}
+      <HabytList
+        data={filteredHabyts}
+        handleEdit={handleEdit}
+        handleDelete={handleDelete}
+        searchHeader={<SearchHeader
+          handleCreate={createHabyt}
+          search={search}
+          setSearch={setSearch}
+        />}
+        editableEntries={true}
       />
     </ThemedView>
   )
@@ -111,8 +85,5 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-  },
-  listContent: {
-    gap: 16,
   },
 })
