@@ -3,6 +3,8 @@ import bcrypt from "bcrypt"
 import type { LoginResponse } from "../../../shared/src/index.js"
 import { User } from "../../src/models/index.js"
 
+const PASSWORD_HASH_CACHE = new Map<string, string>()
+
 // ============================================
 // LOW-LEVEL HELPERS (Single Responsibility)
 // ============================================
@@ -33,12 +35,20 @@ export const loginUser = async (
 
 /**
  * Creates a user directly in the database (bypassing API validation)
- * Useful for test setup
+ * Useful for test setup. Uses cached bcrypt hashes for performance.
  */
 export const createUserInDB = async (
   userdata: { username: string; name: string; email: string; password: string }
 ) => {
-  const passwordHash = await bcrypt.hash(userdata.password, 10)
+  // Check cache first
+  let passwordHash = PASSWORD_HASH_CACHE.get(userdata.password)
+  
+  if (!passwordHash) {
+    // Cache miss - compute and store
+    passwordHash = await bcrypt.hash(userdata.password, 10)
+    PASSWORD_HASH_CACHE.set(userdata.password, passwordHash)
+  }
+  
   return await User.create({
     username: userdata.username,
     name: userdata.name,
