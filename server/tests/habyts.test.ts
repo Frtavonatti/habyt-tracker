@@ -6,7 +6,7 @@ import { randomUUID } from "node:crypto"
 import app from "../src/index.js"
 import { User, Habyt } from "../src/models/index.js"
 import type { Habyt as HabytResponse } from "../../shared/src/index.js"
-import { createAnotherUserAndGetToken, createInitialUser } from "./helpers/auth.helper.js"
+import { createUserInDB, loginUser, createAnotherUserAndGetToken } from "./helpers/auth.helper.js"
 
 const api = supertest(app)
 
@@ -25,21 +25,14 @@ const habytList = [
 
 const nonExistentId = randomUUID()
 
-const loginAndGetToken = async () => {
-  const loginResponse = await api.post('/api/login').send({
-    username: initialUser.username,
-    password: initialUser.password
-  }).expect(200)
-  return loginResponse.body.token as string
-}
-
 let user: User; let habyt: Habyt | null; let token: string
 
 beforeEach(async () => {
   await User.destroy({ where: {} })
   await Habyt.destroy({ where: {} })
 
-  user = await createInitialUser(initialUser)
+  user = await createUserInDB(initialUser)
+  token = await loginUser(api, { username: initialUser.username, password: initialUser.password })
 
   for (const habyt of habytList) {
     await Habyt.create({ ...habyt, userId: user.id })
@@ -47,8 +40,6 @@ beforeEach(async () => {
 
   habyt = await Habyt.findOne({ where: { title: habytList[0]!.title } })
   if (!habyt) throw new Error('Error creating habyt while setting test')
-
-  token = await loginAndGetToken()
 })
 
 describe("GET /api/habyts", () => {

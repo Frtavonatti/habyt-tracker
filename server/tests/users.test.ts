@@ -5,8 +5,8 @@ import { randomUUID } from 'node:crypto'
 
 import app from '../src/index.js'
 import { User } from '../src/models/index.js'
-import type { UserResponse, LoginResponse } from "../../shared/src/types/user.types.js"
-import { createInitialUser } from "./helpers/auth.helper.js"
+import type { UserResponse } from "../../shared/src/types/user.types.js"
+import { createUserInDB, loginUser } from "./helpers/auth.helper.js"
 
 interface ErrorBody {
   error: string
@@ -23,20 +23,12 @@ const initialUser = {
 
 const nonexistentId = randomUUID()
 
-const loginAndGetToken = async () => {
-  const loginResponse = await api.post('/api/login').send({
-    username: initialUser.username,
-    password: initialUser.password
-  }).expect(200)
-  return (loginResponse.body as LoginResponse).token
-}
-
 let user: User; let token: string
 
 beforeEach(async () => {
   await User.destroy({ where: {} })
-  user = await createInitialUser(initialUser)
-  token = await loginAndGetToken()
+  user = await createUserInDB(initialUser)
+  token = await loginUser(api, { username: initialUser.username, password: initialUser.password })
 })
 
 describe('GET /api/users', () => {

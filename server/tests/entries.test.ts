@@ -7,7 +7,7 @@ import app from "../src/index.js"
 import { User, Habyt, Entry } from "../src/models/index.js"
 import { toDateOnlyUTC } from "../src/utils/toDateOnly.js"
 import type { Entry as EntryBase } from "../../shared/src/index.js"
-import { createAnotherUserAndGetToken, createInitialUser } from "./helpers/auth.helper.js"
+import { createUserInDB, loginUser, createAnotherUserAndGetToken } from "./helpers/auth.helper.js"
 
 const api = supertest(app)
 
@@ -22,14 +22,6 @@ const initialHabyt = { title: "Read Books", description: "Read for 30 minutes da
 const initialEntry = { completed: true, timeSpentMinutes: 30 }
 const nonExistentId = randomUUID()
 
-const loginAndGetToken = async () => {
-  const loginResponse = await api.post('/api/login').send({
-    username: initialUser.username,
-    password: initialUser.password
-  }).expect(200)
-  return loginResponse.body.token as string
-}
-
 let user: User, habyt: Habyt, token: string
 
 beforeEach(async () => {
@@ -37,9 +29,9 @@ beforeEach(async () => {
   await Habyt.destroy({ where: {} })
   await Entry.destroy({ where: {} })
 
-  user = await createInitialUser(initialUser)
+  user = await createUserInDB(initialUser)
   habyt = await Habyt.create({ ...initialHabyt, userId: user.id })
-  token = await loginAndGetToken()
+  token = await loginUser(api, { username: initialUser.username, password: initialUser.password })
 
   const initialDate = toDateOnlyUTC(new Date("August 20, 2025 23:15:30"))
   await Entry.create({ ...initialEntry, date: initialDate, habytId: habyt.id })
