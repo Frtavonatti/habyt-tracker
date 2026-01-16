@@ -1,5 +1,4 @@
 import supertest from 'supertest'
-import bcrypt from 'bcrypt'
 import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { randomUUID } from 'node:crypto'
@@ -7,6 +6,7 @@ import { randomUUID } from 'node:crypto'
 import app from '../src/index.js'
 import { User } from '../src/models/index.js'
 import type { UserResponse, LoginResponse } from "../../shared/src/types/user.types.js"
+import { createInitialUser } from "./helpers/auth.helper.js"
 
 interface ErrorBody {
   error: string
@@ -35,14 +35,7 @@ let user: User; let token: string
 
 beforeEach(async () => {
   await User.destroy({ where: {} })
-  const passwordHash = await bcrypt.hash(initialUser.password, 10)
-  user = await User.create({
-    username: initialUser.username,
-    name: initialUser.name,
-    email: initialUser.email,
-    passwordHash
-  })
-
+  user = await createInitialUser(initialUser)
   token = await loginAndGetToken()
 })
 

@@ -1,11 +1,11 @@
 import supertest from "supertest"
-import bcrypt from "bcrypt"
 import { test, describe, beforeEach } from "node:test"
 import assert from "node:assert"
 
 import app from "../src/index.js"
 import { User } from "../src/models/index.js"
 import type { LoginResponse } from "../../shared/src/types/user.types.js"
+import { createInitialUser } from "./helpers/auth.helper.js"
 
 interface BodyError {
   error: string
@@ -22,13 +22,7 @@ const userData = {
 
 beforeEach(async () => {
   await User.destroy({ where: {} })
-  const passwordHash = await bcrypt.hash(userData.password, 10)
-  await User.create({
-    username: userData.username,
-    name: userData.name,
-    email: userData.email,
-    passwordHash,
-  })
+  await createInitialUser(userData)
 })
 
 describe("POST /api/login with valid credentials", () => {

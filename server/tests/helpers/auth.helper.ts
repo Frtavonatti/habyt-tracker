@@ -1,8 +1,10 @@
-import supertest from "supertest"
+import type supertest from "supertest"
+import bcrypt from "bcrypt"
 import type { LoginResponse } from "../../../shared/src/index.js"
+import { User } from "../../src/models/index.js"
 
 export const createAndLoginUser = async (
-  api: supertest.SuperTest<supertest.Test>,
+  api: ReturnType<typeof supertest>,
   userdata: { username: string; name: string; email: string; password: string }
 ) => {
   await api.post('/api/users').send(userdata).expect(201)
@@ -15,7 +17,7 @@ export const createAndLoginUser = async (
 }
 
 export const createAnotherUserAndGetToken = async (
-  api: supertest.SuperTest<supertest.Test>
+  api: ReturnType<typeof supertest>
 ) => {
   const anotherUser = {
     username: `testuser-${Date.now()}`,
@@ -25,4 +27,16 @@ export const createAnotherUserAndGetToken = async (
   }
   
   return await createAndLoginUser(api, anotherUser)
+}
+
+export const createInitialUser = async (
+  userdata: { username: string; name: string; email: string; password: string }
+) => {
+  const passwordHash = await bcrypt.hash(userdata.password, 10)
+  return await User.create({
+    username: userdata.username,
+    name: userdata.name,
+    email: userdata.email,
+    passwordHash
+  })
 }

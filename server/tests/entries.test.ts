@@ -1,5 +1,4 @@
 import supertest from "supertest"
-import bcrypt from "bcrypt"
 import { test, describe, beforeEach } from "node:test"
 import assert from "node:assert"
 import { randomUUID } from "node:crypto"
@@ -7,8 +6,8 @@ import { randomUUID } from "node:crypto"
 import app from "../src/index.js"
 import { User, Habyt, Entry } from "../src/models/index.js"
 import { toDateOnlyUTC } from "../src/utils/toDateOnly.js"
-
-import type { Entry as EntryBase, LoginResponse } from "../../shared/src/index.js"
+import type { Entry as EntryBase } from "../../shared/src/index.js"
+import { createAnotherUserAndGetToken, createInitialUser } from "./helpers/auth.helper.js"
 
 const api = supertest(app)
 
@@ -28,23 +27,7 @@ const loginAndGetToken = async () => {
     username: initialUser.username,
     password: initialUser.password
   }).expect(200)
-  return (loginResponse.body as LoginResponse).token
-}
-
-const createAnotherUser = async () => {
-  const anotherUser = {
-    username: `testuser-${Date.now()}`,
-    name: "Another User",
-    email: `another-${Date.now()}@mail.com`,
-    password: "password123"
-  }
-  await api.post('/api/users').send(anotherUser).expect(201)
-  
-  const loginResponse = await api.post('/api/login')
-    .send({ username: anotherUser.username, password: anotherUser.password })
-    .expect(200)
-  
-  return (loginResponse.body as LoginResponse).token
+  return loginResponse.body.token as string
 }
 
 let user: User, habyt: Habyt, token: string
@@ -54,8 +37,7 @@ beforeEach(async () => {
   await Habyt.destroy({ where: {} })
   await Entry.destroy({ where: {} })
 
-  const passwordHash = await bcrypt.hash(initialUser.password, 10)
-  user = await User.create({ ...initialUser, passwordHash })
+  user = await createInitialUser(initialUser)
   habyt = await Habyt.create({ ...initialHabyt, userId: user.id })
   token = await loginAndGetToken()
 
@@ -82,7 +64,7 @@ describe("GET /habyts/:habytId/entries", () => {
   })
 
   test("fails with 403 if user is not the habyt owner", async () => {
-    const anotherToken = await createAnotherUser()
+    const anotherToken = await createAnotherUserAndGetToken(api)
 
     const response = await api.get(`/api/habyts/${habyt?.id}/entries`)
       .set('Authorization', `Bearer ${anotherToken}`)
@@ -220,7 +202,7 @@ describe("POST /habyts/:habytId/entries", () => {
   })
 
   test("fails with 403 if user is not the habyt owner", async () => {
-    const anotherToken = await createAnotherUser()
+    const anotherToken = await createAnotherUserAndGetToken(api)
 
     const newEntry = { completed: true }
     const response = await api.post(`/api/habyts/${habyt?.id}/entries`)
@@ -266,7 +248,7 @@ describe("PATCH /entries/:id", () => {
 
   test('fails with 403 if user is not the habyt owner', async () => {
     const entry = await Entry.findOne({ where: { timeSpentMinutes: initialEntry.timeSpentMinutes } })
-    const anotherToken = await createAnotherUser()
+    const anotherToken = await createAnotherUserAndGetToken(api)
 
     const response = await api.patch(`/api/entries/${entry?.id}`)
       .set("Authorization", `Bearer ${anotherToken}`)
@@ -314,7 +296,7 @@ describe("DELETE /entries/:id", () => {
 
   test('fails with 403 if user is not the habyt owner', async () => {
     const entry = await Entry.findOne({ where: { timeSpentMinutes: initialEntry.timeSpentMinutes } })
-    const anotherToken = await createAnotherUser()
+    const anotherToken = await createAnotherUserAndGetToken(api)
 
     const response = await api.delete(`/api/entries/${entry?.id}`)
       .set("Authorization", `Bearer ${anotherToken}`)
