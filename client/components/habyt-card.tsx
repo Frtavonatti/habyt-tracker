@@ -173,7 +173,7 @@ export function HabytCard({ id, title, description, onEdit, onDelete, editableEn
         {editableEntries &&
           <HabytActions
             completed={getTodayEntry()}
-            onCreate={() => { void handleCreate }}
+            onCreate={() => { void handleCreate() }}
             onEdit={handleEditEntry}
           />
         }
