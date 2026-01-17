@@ -1,12 +1,12 @@
 import supertest from 'supertest'
-import bcrypt from 'bcrypt'
 import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { randomUUID } from 'node:crypto'
 
 import app from '../src/index.js'
 import { User } from '../src/models/index.js'
-import type { UserResponse, LoginResponse } from "../../shared/src/types/user.types.js"
+import type { UserResponse } from "../../shared/src/types/user.types.js"
+import { createUserInDB, loginUser } from "./helpers/auth.helper.js"
 
 interface ErrorBody {
   error: string
@@ -23,27 +23,12 @@ const initialUser = {
 
 const nonexistentId = randomUUID()
 
-const loginAndGetToken = async () => {
-  const loginResponse = await api.post('/api/login').send({
-    username: initialUser.username,
-    password: initialUser.password
-  }).expect(200)
-  return (loginResponse.body as LoginResponse).token
-}
-
 let user: User; let token: string
 
 beforeEach(async () => {
   await User.destroy({ where: {} })
-  const passwordHash = await bcrypt.hash(initialUser.password, 10)
-  user = await User.create({
-    username: initialUser.username,
-    name: initialUser.name,
-    email: initialUser.email,
-    passwordHash
-  })
-
-  token = await loginAndGetToken()
+  user = await createUserInDB(initialUser)
+  token = await loginUser(api, { username: initialUser.username, password: initialUser.password })
 })
 
 describe('GET /api/users', () => {

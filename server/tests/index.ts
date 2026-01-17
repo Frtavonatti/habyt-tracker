@@ -4,6 +4,7 @@ import { after } from "node:test"
 
 import { sequelize } from "../src/db/index.js"
 import { runMigrations } from "../src/db/migrations.js"
+import { clearPasswordHashCache } from "./helpers/auth.helper.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -14,7 +15,7 @@ await runMigrations()
 console.log("[tests] Database ready")
 
 // Main test orchestration
-async function runTests () {
+async function runTests() {
   const testFiles = [
     "login.test.js",
     "users.test.js",
@@ -27,13 +28,15 @@ async function runTests () {
     const fileUrl = pathToFileURL(path.join(__dirname, file)).href
     await import(fileUrl)
   }
-  
+
   // Clean up after all tests
   after(async () => {
     try {
       console.log("[tests] Closing sequelize connection...")
       await sequelize.close()
       console.log("[tests] Connection closed")
+      // Clear bcrypt cache at the very end
+      clearPasswordHashCache()
     } catch (e) {
       console.error("[tests] Error closing sequelize", e)
     } finally {
