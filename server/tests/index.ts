@@ -16,6 +16,11 @@ console.log("[tests] Database ready")
 
 // Main test orchestration
 async function runTests() {
+  // Clear bcrypt cache after each test to prevent stale hashes
+  afterEach(() => {
+    clearPasswordHashCache()
+  })
+
   const testFiles = [
     "login.test.js",
     "users.test.js",
@@ -28,11 +33,6 @@ async function runTests() {
     const fileUrl = pathToFileURL(path.join(__dirname, file)).href
     await import(fileUrl)
   }
-
-  // Clear bcrypt cache after each test to prevent stale hashes
-  afterEach(() => {
-    clearPasswordHashCache()
-  })
 
   // Clean up after all tests
   after(async () => {
