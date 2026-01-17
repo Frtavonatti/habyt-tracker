@@ -77,7 +77,7 @@ describe("GET /api/habyts", () => {
       const response = await api.get(`/api/habyts/${habyt!.id}`)
         .set("Authorization", `Bearer ${anotherToken}`)
         .expect(403)
-      
+
       assert.strictEqual(response.body.error, "Forbidden")
     })
   })
@@ -107,7 +107,7 @@ describe("POST /api/habyts", () => {
       .set("Authorization", `Bearer ${token}`)
       .send(newHabyt)
       .expect(400)
-    
+
     assert.strictEqual(response.body.error, "Validation failed")
   })
 
@@ -139,7 +139,7 @@ describe("PUT /api/habyts/:id", () => {
       .set("Authorization", `Bearer ${token}`)
       .send(updatedData)
       .expect(404)
-    
+
     assert.strictEqual(response.body.error, "Habyt not found")
   })
 
@@ -160,7 +160,7 @@ describe("PUT /api/habyts/:id", () => {
       .set("Authorization", `Bearer ${anotherToken}`)
       .send(updatedData)
       .expect(403)
-    
+
     assert.strictEqual(response.body.error, "Forbidden")
   })
 })
@@ -184,7 +184,7 @@ describe("DELETE /api/habyts/:id", () => {
     const response = await api.delete(`/api/habyts/${nonExistentId}`)
       .set("Authorization", `Bearer ${token}`)
       .expect(404)
-    
+
     assert.strictEqual(response.body.error, "Habyt not found")
   })
 

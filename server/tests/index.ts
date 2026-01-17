@@ -14,7 +14,7 @@ await runMigrations()
 console.log("[tests] Database ready")
 
 // Main test orchestration
-async function runTests () {
+async function runTests() {
   const testFiles = [
     "login.test.js",
     "users.test.js",
@@ -27,7 +27,7 @@ async function runTests () {
     const fileUrl = pathToFileURL(path.join(__dirname, file)).href
     await import(fileUrl)
   }
-  
+
   // Clean up after all tests
   after(async () => {
     try {

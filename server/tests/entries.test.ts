@@ -44,7 +44,7 @@ describe("GET /habyts/:habytId/entries", () => {
       .get(`/api/habyts/${habyt?.id}/entries`)
       .set('Authorization', `Bearer ${token}`)
       .expect(200)
-    
+
     const entries = response.body as EntryBase[]
     assert.strictEqual(entries.length, 1)
     assert.strictEqual(entries[0]?.completed, initialEntry.completed)
@@ -61,7 +61,7 @@ describe("GET /habyts/:habytId/entries", () => {
     const response = await api.get(`/api/habyts/${habyt?.id}/entries`)
       .set('Authorization', `Bearer ${anotherToken}`)
       .expect(403)
-    
+
     assert.strictEqual(response.body.error, "Forbidden")
   })
 })
@@ -77,7 +77,7 @@ describe("POST /habyts/:habytId/entries", () => {
       .set("Authorization", `Bearer ${token}`)
       .send(newEntry)
       .expect(201)
-    
+
     const createdEntry = response.body as EntryBase
     assert.strictEqual(createdEntry.completed, newEntry.completed)
     assert.strictEqual(createdEntry.timeSpentMinutes, newEntry.timeSpentMinutes)
@@ -95,7 +95,7 @@ describe("POST /habyts/:habytId/entries", () => {
       .set("Authorization", `Bearer ${token}`)
       .send(newEntry)
       .expect(201)
-    
+
     const createdEntry = response.body as EntryBase
     assert.strictEqual(createdEntry.completed, newEntry.completed)
     assert.strictEqual(createdEntry.timeSpentMinutes, newEntry.timeSpentMinutes)
@@ -112,7 +112,7 @@ describe("POST /habyts/:habytId/entries", () => {
       .set("Authorization", `Bearer ${token}`)
       .send(newEntry)
       .expect(201)
-    
+
     const createdEntry = response.body as EntryBase
     const today = toDateOnlyUTC(new Date())
     assert.strictEqual(createdEntry.date, today)
@@ -123,12 +123,12 @@ describe("POST /habyts/:habytId/entries", () => {
       completed: true,
       date: "invalid-date-format"
     }
-    
+
     const response = await api.post(`/api/habyts/${habyt?.id}/entries`)
       .set("Authorization", `Bearer ${token}`)
       .send(newEntry)
       .expect(400)
-    
+
     assert.strictEqual(response.body.error, "Validation failed")
   })
 
@@ -138,7 +138,7 @@ describe("POST /habyts/:habytId/entries", () => {
       .set("Authorization", `Bearer ${token}`)
       .send(newEntry)
       .expect(400)
-    
+
     assert.strictEqual(response.body.error, "Validation failed")
   })
 
@@ -146,18 +146,18 @@ describe("POST /habyts/:habytId/entries", () => {
     const entries = [
       { completed: true, timeSpentMinutes: 180 },
       { completed: false }
-    ] 
+    ]
 
     await api.post(`/api/habyts/${habyt?.id}/entries`)
       .set("Authorization", `Bearer ${token}`)
       .send(entries[0])
       .expect(201)
-    
+
     const response = await api.post(`/api/habyts/${habyt?.id}/entries`)
       .set("Authorization", `Bearer ${token}`)
       .send(entries[1])
       .expect(409)
-    
+
     assert.strictEqual(response.body.error, "Entry for this date already exists")
   })
 
@@ -177,12 +177,12 @@ describe("POST /habyts/:habytId/entries", () => {
       .set("Authorization", `Bearer ${token}`)
       .send(entry1)
       .expect(201)
-    
+
     const response = await api.post(`/api/habyts/${habyt?.id}/entries`)
       .set("Authorization", `Bearer ${token}`)
       .send(entry2)
       .expect(409)
-    
+
     assert.strictEqual(response.body.error, "Entry for this date already exists")
   })
 
@@ -201,7 +201,7 @@ describe("POST /habyts/:habytId/entries", () => {
       .set("Authorization", `Bearer ${anotherToken}`)
       .send(newEntry)
       .expect(403)
-    
+
     assert.strictEqual(response.body.error, "Forbidden")
   })
 })
@@ -209,12 +209,12 @@ describe("POST /habyts/:habytId/entries", () => {
 describe("PATCH /entries/:id", () => {
   test('updates an entry with valid data and token', async () => {
     const entry = await Entry.findOne({ where: { timeSpentMinutes: initialEntry.timeSpentMinutes } })
-    
+
     const updatedEntry = await api.patch(`/api/entries/${entry?.id}`)
       .set("Authorization", `Bearer ${token}`)
       .send({ completed: !(entry?.completed) })
       .expect(200)
-    
+
     const updatedEntryResponse = updatedEntry.body as EntryBase
     assert.strictEqual(entry?.id, updatedEntryResponse.id)
     assert.strictEqual(entry.completed, !(updatedEntryResponse.completed))
@@ -228,13 +228,13 @@ describe("PATCH /entries/:id", () => {
       .expect(401)
   })
 
-  test('fails with 404 with invalid entryId', async ()=> {
+  test('fails with 404 with invalid entryId', async () => {
     const updateEntryData = { timeSpentMinutes: 120 }
     const response = await api.patch(`/api/entries/${nonExistentId}`)
       .set("Authorization", `Bearer ${token}`)
       .send({ timeSpentMinutes: updateEntryData.timeSpentMinutes })
       .expect(404)
-    
+
     assert.strictEqual(response.body.error, "Entry not found")
   })
 
@@ -246,7 +246,7 @@ describe("PATCH /entries/:id", () => {
       .set("Authorization", `Bearer ${anotherToken}`)
       .send({ completed: false })
       .expect(403)
-    
+
     assert.strictEqual(response.body.error, "Forbidden")
   })
 })
@@ -275,7 +275,7 @@ describe("DELETE /entries/:id", () => {
   test('fails with 404 if entry does not exist', async () => {
     const habyt = await Habyt.findOne({ where: { title: initialHabyt.title } })
     const entriesBefore = await Entry.findAll({ where: { habytId: habyt?.id } })
-    
+
     const response = await api.delete(`/api/entries/${nonExistentId}`)
       .set("Authorization", `Bearer ${token}`)
       .expect(404)

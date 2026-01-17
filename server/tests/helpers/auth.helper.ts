@@ -29,7 +29,7 @@ export const loginUser = async (
   const loginResponse = await api.post('/api/login')
     .send(credentials)
     .expect(200)
-  
+
   return (loginResponse.body as LoginResponse).token
 }
 
@@ -42,13 +42,13 @@ export const createUserInDB = async (
 ) => {
   // Check cache first
   let passwordHash = PASSWORD_HASH_CACHE.get(userdata.password)
-  
+
   if (!passwordHash) {
     // Cache miss - compute and store
     passwordHash = await bcrypt.hash(userdata.password, 10)
     PASSWORD_HASH_CACHE.set(userdata.password, passwordHash)
   }
-  
+
   return await User.create({
     username: userdata.username,
     name: userdata.name,
