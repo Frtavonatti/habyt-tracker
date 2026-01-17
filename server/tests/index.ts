@@ -1,6 +1,6 @@
 import path from "node:path"
 import { fileURLToPath, pathToFileURL } from "node:url"
-import { after, afterEach } from "node:test"
+import { after } from "node:test"
 
 import { sequelize } from "../src/db/index.js"
 import { runMigrations } from "../src/db/migrations.js"
@@ -29,17 +29,14 @@ async function runTests() {
     await import(fileUrl)
   }
 
-  // Clear bcrypt cache after each test to prevent stale hashes
-  afterEach(() => {
-    clearPasswordHashCache()
-  })
-
   // Clean up after all tests
   after(async () => {
     try {
       console.log("[tests] Closing sequelize connection...")
       await sequelize.close()
       console.log("[tests] Connection closed")
+      // Clear bcrypt cache at the very end
+      clearPasswordHashCache()
     } catch (e) {
       console.error("[tests] Error closing sequelize", e)
     } finally {
