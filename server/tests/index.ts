@@ -1,9 +1,10 @@
 import path from "node:path"
 import { fileURLToPath, pathToFileURL } from "node:url"
-import { after } from "node:test"
+import { after, afterEach } from "node:test"
 
 import { sequelize } from "../src/db/index.js"
 import { runMigrations } from "../src/db/migrations.js"
+import { clearPasswordHashCache } from "./helpers/auth.helper.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -27,6 +28,11 @@ async function runTests() {
     const fileUrl = pathToFileURL(path.join(__dirname, file)).href
     await import(fileUrl)
   }
+
+  // Clear bcrypt cache after each test to prevent stale hashes
+  afterEach(() => {
+    clearPasswordHashCache()
+  })
 
   // Clean up after all tests
   after(async () => {
